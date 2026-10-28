@@ -251,124 +251,123 @@
     </div>
 
     <script>
-        // Note: Supabase client 'supabase' variable config.js se aa raha hai.
+    let isLoginMode = true;
+    const form = document.getElementById('auth-form');
+    const usernameGroup = document.getElementById('username-group');
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const toggleFormBtn = document.getElementById('toggle-form');
 
-        let isLoginMode = true;
-        const form = document.getElementById('auth-form');
-        const usernameGroup = document.getElementById('username-group');
-        const submitBtn = document.getElementById('submit-btn');
-        const btnText = document.getElementById('btn-text');
-        const toggleFormBtn = document.getElementById('toggle-form');
+    // Custom Toast Notification Function
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        let icon = 'fa-circle-info';
+        if (type === 'error') icon = 'fa-circle-exclamation';
+        if (type === 'success') icon = 'fa-circle-check';
 
-        // Custom Toast Notification Function
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            let icon = 'fa-circle-info';
-            if (type === 'error') icon = 'fa-circle-exclamation';
-            if (type === 'success') icon = 'fa-circle-check';
+        toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+        container.appendChild(toast);
 
-            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
-            container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
 
-            setTimeout(() => {
-                toast.style.animation = 'fadeOut 0.3s ease forwards';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+    function togglePassword() {
+        const passInput = document.getElementById('password');
+        const icon = document.querySelector('.toggle-password');
+        if (passInput.type === 'password') {
+            passInput.type = 'text';
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            passInput.type = 'password';
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    }
+
+    // Form Toggle (Login <-> Signup)
+    toggleFormBtn.addEventListener('click', () => {
+        isLoginMode = !isLoginMode;
+        if (isLoginMode) {
+            document.querySelector('.brand-logo').innerText = 'Yunam';
+            btnText.innerText = 'Login';
+            toggleFormBtn.innerHTML = 'Don\'t have an account? <span>Sign up</span>';
+            usernameGroup.classList.add('hidden');
+            document.getElementById('username').required = false;
+        } else {
+            document.querySelector('.brand-logo').innerText = 'Join Yunam';
+            btnText.innerText = 'Create Account';
+            toggleFormBtn.innerHTML = 'Already have an account? <span>Login</span>';
+            usernameGroup.classList.remove('hidden');
+            document.getElementById('username').required = true;
+        }
+    });
+
+    // Handle Form Submit
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const username = document.getElementById('username').value.toLowerCase().trim();
+
+        if (!isLoginMode && username.includes(' ')) {
+            showToast("Username mein space nahi ho sakta!", "error");
+            return;
+        }
+        if (!isLoginMode && username.length < 3) {
+            showToast("Username kam az kam 3 characters ka hona chahiye!", "error");
+            return;
         }
 
-        function togglePassword() {
-            const passInput = document.getElementById('password');
-            const icon = document.querySelector('.toggle-password');
-            if (passInput.type === 'password') {
-                passInput.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
-            } else {
-                passInput.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
-            }
-        }
+        // Button Loading State
+        submitBtn.disabled = true;
+        const originalText = btnText.innerText;
+        btnText.innerHTML = '<div class="spinner"></div>';
 
-        // Form Toggle (Login <-> Signup)
-        toggleFormBtn.addEventListener('click', () => {
-            isLoginMode = !isLoginMode;
-            if (isLoginMode) {
-                document.querySelector('.brand-logo').innerText = 'Yunam';
-                btnText.innerText = 'Login';
-                toggleFormBtn.innerHTML = 'Don\'t have an account? <span>Sign up</span>';
-                usernameGroup.classList.add('hidden');
-                document.getElementById('username').required = false;
-            } else {
-                document.querySelector('.brand-logo').innerText = 'Join Yunam';
-                btnText.innerText = 'Create Account';
-                toggleFormBtn.innerHTML = 'Already have an account? <span>Login</span>';
-                usernameGroup.classList.remove('hidden');
-                document.getElementById('username').required = true;
-            }
-        });
-
-        // Handle Form Submit
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const username = document.getElementById('username').value.toLowerCase().trim();
-
-            if (!isLoginMode && username.includes(' ')) {
-                showToast("Username mein space nahi ho sakta!", "error");
-                return;
-            }
-            if (!isLoginMode && username.length < 3) {
-                showToast("Username kam az kam 3 characters ka hona chahiye!", "error");
-                return;
-            }
-
-            // Button Loading State
-            submitBtn.disabled = true;
-            const originalText = btnText.innerText;
-            btnText.innerHTML = '<div class="spinner"></div>';
-
+        try {
             if (isLoginMode) {
                 // LOGIN
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
                 
-                if (error) {
-                    showToast(error.message, "error");
-                    submitBtn.disabled = false;
-                    btnText.innerText = originalText;
-                } else {
-                    showToast("Login successful! Redirecting...", "success");
-                    setTimeout(() => window.location.href = 'dashboard.html', 1000);
-                }
+                if (error) throw error;
+
+                showToast("Login successful! Redirecting...", "success");
+                setTimeout(() => window.location.href = 'dashboard.html', 1000);
             } else {
                 // SIGNUP
-                const { error } = await supabase.auth.signUp({
+                const { error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: { data: { username: username } }
                 });
 
-                if (error) {
-                    showToast(error.message, "error");
-                    submitBtn.disabled = false;
-                    btnText.innerText = originalText;
-                } else {
-                    showToast("Account created successfully! Redirecting...", "success");
-                    setTimeout(() => window.location.href = 'dashboard.html', 1200);
-                }
-            }
-        });
+                if (error) throw error;
 
-        // Check if already logged in (Security Check)
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
+                showToast("Account created successfully! Redirecting...", "success");
+                setTimeout(() => window.location.href = 'dashboard.html', 1200);
+            }
+        } catch (err) {
+            // Agar koi error aaye toh spinner ruk jaye ga aur error show hoga
+            showToast(err.message || "Koi masla ho gaya, dobara koshish karein.", "error");
+            submitBtn.disabled = false;
+            btnText.innerText = originalText;
+        }
+    });
+
+    // Check if already logged in (Security Check)
+    async function checkSession() {
+        if(typeof supabaseClient !== 'undefined') {
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
-                window.location.href = 'dashboard.html'; // Agar pehle se login hai toh direct dashboard bhejo
+                window.location.href = 'dashboard.html';
             }
         }
-        checkSession();
-    </script>
+    }
+    checkSession();
+</script>
 </body>
 </html>
