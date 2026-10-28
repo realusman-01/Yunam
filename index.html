@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yunam - Create Your Identity</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 🔥 HAMARI CUSTOM CONFIG FILE (Jisme keys hain) 🔥 -->
+    <script src="config.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(20, 27, 45, 0.7);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.15), transparent 25%);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .glass-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            padding: 40px 30px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 10;
+        }
+
+        .brand-logo {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .form-group { margin-bottom: 20px; position: relative; }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .password-wrapper { position: relative; }
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px var(--primary);
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .toggle-text {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .toggle-text span {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .toggle-text span:hover { color: var(--primary-hover); text-decoration: underline; }
+        
+        .hidden { display: none !important; }
+
+        /* Professional Toast Alerts */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 350px;
+        }
+
+        .toast {
+            background: #1e293b;
+            color: #fff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideDown 0.3s ease forwards;
+        }
+
+        .toast.error { border-left-color: var(--error); }
+        .toast.success { border-left-color: var(--success); }
+        
+        .toast i { font-size: 18px; }
+        .toast.error i { color: var(--error); }
+        .toast.success i { color: var(--success); }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid #fff;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <div class="glass-container">
+        <div class="brand-logo">Yunam</div>
+        
+        <form id="auth-form">
+            <!-- Username sirf signup ke waqt dikhega -->
+            <div class="form-group hidden" id="username-group">
+                <label>Username</label>
+                <input type="text" id="username" placeholder="e.g. usman">
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" required placeholder="you@example.com">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" required placeholder="••••••••">
+                    <i class="fa-regular fa-eye toggle-password" onclick="togglePassword()"></i>
+                </div>
+            </div>
+
+            <button type="submit" id="submit-btn">
+                <span id="btn-text">Login</span>
+            </button>
+        </form>
+
+        <div class="toggle-text" id="toggle-form">
+            Don't have an account? <span>Sign up</span>
+        </div>
+    </div>
+
+    <script>
+        // Note: Supabase client 'supabase' variable config.js se aa raha hai.
+
+        let isLoginMode = true;
+        const form = document.getElementById('auth-form');
+        const usernameGroup = document.getElementById('username-group');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+        const toggleFormBtn = document.getElementById('toggle-form');
+
+        // Custom Toast Notification Function
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            let icon = 'fa-circle-info';
+            if (type === 'error') icon = 'fa-circle-exclamation';
+            if (type === 'success') icon = 'fa-circle-check';
+
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'fadeOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function togglePassword() {
+            const passInput = document.getElementById('password');
+            const icon = document.querySelector('.toggle-password');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passInput.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        // Form Toggle (Login <-> Signup)
+        toggleFormBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            if (isLoginMode) {
+                document.querySelector('.brand-logo').innerText = 'Yunam';
+                btnText.innerText = 'Login';
+                toggleFormBtn.innerHTML = 'Don\'t have an account? <span>Sign up</span>';
+                usernameGroup.classList.add('hidden');
+                document.getElementById('username').required = false;
+            } else {
+                document.querySelector('.brand-logo').innerText = 'Join Yunam';
+                btnText.innerText = 'Create Account';
+                toggleFormBtn.innerHTML = 'Already have an account? <span>Login</span>';
+                usernameGroup.classList.remove('hidden');
+                document.getElementById('username').required = true;
+            }
+        });
+
+        // Handle Form Submit
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value.toLowerCase().trim();
+
+            if (!isLoginMode && username.includes(' ')) {
+                showToast("Username mein space nahi ho sakta!", "error");
+                return;
+            }
+            if (!isLoginMode && username.length < 3) {
+                showToast("Username kam az kam 3 characters ka hona chahiye!", "error");
+                return;
+            }
+
+            // Button Loading State
+            submitBtn.disabled = true;
+            const originalText = btnText.innerText;
+            btnText.innerHTML = '<div class="spinner"></div>';
+
+            if (isLoginMode) {
+                // LOGIN
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                
+                if (error) {
+                    showToast(error.message, "error");
+                    submitBtn.disabled = false;
+                    btnText.innerText = originalText;
+                } else {
+                    showToast("Login successful! Redirecting...", "success");
+                    setTimeout(() => window.location.href = 'dashboard.html', 1000);
+                }
+            } else {
+                // SIGNUP
+                const { error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: { data: { username: username } }
+                });
+
+                if (error) {
+                    showToast(error.message, "error");
+                    submitBtn.disabled = false;
+                    btnText.innerText = originalText;
+                } else {
+                    showToast("Account created successfully! Redirecting...", "success");
+                    setTimeout(() => window.location.href = 'dashboard.html', 1200);
+                }
+            }
+        });
+
+        // Check if already logged in (Security Check)
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                window.location.href = 'dashboard.html'; // Agar pehle se login hai toh direct dashboard bhejo
+            }
+        }
+        checkSession();
+    </script>
+</body>
+</html>
