@@ -24,16 +24,9 @@
         }
 
         * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent; 
-            touch-action: manipulation; 
-            -webkit-user-select: none; 
-            -moz-user-select: none; 
-            -ms-user-select: none; 
-            user-select: none; 
+            box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; touch-action: manipulation; 
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; 
         }
 
         body {
@@ -48,34 +41,23 @@
         }
 
         .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            padding: 15px 20px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--card-bg); backdrop-filter: blur(16px);
+            border: 1px solid var(--border); padding: 15px 20px; border-radius: 15px;
+            margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
         .logo { font-size: 20px; font-weight: 700; color: #818cf8; }
-        .logout-btn { background: transparent; border: none; color: var(--error); font-size: 18px; cursor: pointer; padding: 5px; }
+        .settings-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 5px; transition: 0.2s; }
+        .settings-btn:active { color: var(--text-main); transform: rotate(45deg); }
 
         .container { max-width: 600px; margin: 0 auto; }
 
         .glass-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--border);
-            padding: 25px;
-            border-radius: 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 15px 35px -10px rgba(0,0,0,0.4);
+            background: var(--card-bg); backdrop-filter: blur(16px);
+            border: 1px solid var(--border); padding: 25px; border-radius: 20px;
+            margin-bottom: 25px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.4);
             animation: fadeIn 0.5s ease;
         }
 
@@ -86,12 +68,10 @@
 
         .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .avatar-circle {
-            width: 65px; height: 65px;
-            border-radius: 50%;
+            width: 65px; height: 65px; border-radius: 50%;
             background: linear-gradient(135deg, #6366f1, #a855f7);
             display: flex; justify-content: center; align-items: center;
-            font-size: 24px; font-weight: 700; color: #fff;
-            border: 2px solid var(--border);
+            font-size: 24px; font-weight: 700; color: #fff; border: 2px solid var(--border);
         }
         
         .user-info h2 { font-size: 18px; margin-bottom: 4px; }
@@ -100,68 +80,45 @@
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
         
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            border-radius: 10px;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.3s ease;
-            appearance: none; 
-            -webkit-appearance: none;
+        input, select, textarea {
+            width: 100%; padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border);
+            color: var(--text-main); border-radius: 10px; font-size: 14px;
+            outline: none; transition: all 0.3s ease; appearance: none; -webkit-appearance: none;
         }
 
-        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+        /* 🔥 Bio Expandable Box 🔥 */
+        textarea {
+            resize: none; min-height: 80px; max-height: 120px; line-height: 1.5;
+        }
+
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
         select {
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
-            cursor: pointer;
+            background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; cursor: pointer;
         }
-        select option {
-            background-color: #1e293b;
-            color: #f8fafc;
-            padding: 10px;
-        }
+        select option { background-color: #1e293b; color: #f8fafc; padding: 10px; }
 
         .btn-primary {
-            width: 100%; padding: 14px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-            color: #fff; border: none; border-radius: 10px;
-            font-size: 15px; font-weight: 600; cursor: pointer;
-            transition: all 0.3s;
-            display: flex; justify-content: center; align-items: center; gap: 8px;
+            width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;
         }
         .btn-primary:active { transform: scale(0.98); }
 
         .links-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
         
         .link-item {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid var(--border);
-            padding: 12px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.3s;
+            background: rgba(0,0,0,0.2); border: 1px solid var(--border);
+            padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;
+            transition: 0.2s;
         }
-        .link-item:active { background: rgba(255,255,255,0.05); }
+        .link-item:active { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
 
-        /* 🔥 Clickable Link Styling 🔥 */
+        /* 🔥 Full clickable area 🔥 */
         .link-content { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            overflow: hidden; 
-            text-decoration: none; 
-            color: inherit; 
-            flex: 1; /* Takes full available width */
+            display: flex; align-items: center; gap: 12px; overflow: hidden; flex: 1; cursor: pointer;
         }
         
         .link-content .icon { width: 35px; height: 35px; border-radius: 8px; background: rgba(99, 102, 241, 0.2); display: flex; justify-content: center; align-items: center; color: var(--primary); font-size: 16px; flex-shrink: 0; }
@@ -169,38 +126,95 @@
         .link-content h3 { font-size: 14px; font-weight: 600; }
         .link-content p { font-size: 11px; color: var(--text-muted); }
 
-        .link-actions { display: flex; gap: 5px; flex-shrink: 0; }
+        .link-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
         .action-btn {
             background: transparent; border: none; color: var(--text-muted);
-            width: 32px; height: 32px; border-radius: 8px;
-            display: flex; justify-content: center; align-items: center;
+            width: 32px; height: 32px; border-radius: 8px; display: flex; justify-content: center; align-items: center;
             cursor: pointer; font-size: 14px; transition: 0.2s;
         }
         .action-btn:active { background: rgba(255,255,255,0.1); color: var(--text-main); }
         .action-btn.delete:active { color: var(--error); background: rgba(239, 68, 68, 0.1); }
-        .action-btn.open-link { color: var(--primary); text-decoration: none;}
 
+        /* Toasts */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 350px; }
         .toast { background: #1e293b; color: #fff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; animation: slideDown 0.3s ease forwards; }
         .toast.error { border-left-color: var(--error); }
         .toast.success { border-left-color: var(--success); }
+        .toast.info { border-left-color: #3b82f6; }
         .toast i { font-size: 18px; }
         .toast.error i { color: var(--error); }
         .toast.success i { color: var(--success); }
+        .toast.info i { color: #3b82f6; }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
         
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff; width: 18px; height: 18px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* 🔥 MODALS (Popups) 🔥 */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center; z-index: 10000;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-content {
+            background: #141b2d; border: 1px solid rgba(255,255,255,0.1);
+            padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); transform: scale(0.9); transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        
+        .modal-content h3 { font-size: 18px; margin-bottom: 10px; }
+        .modal-content p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+        
+        .modal-actions { display: flex; gap: 10px; }
+        .btn-secondary {
+            flex: 1; padding: 12px; background: rgba(255,255,255,0.1); color: white;
+            border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
+        }
+        .btn-secondary:active { background: rgba(255,255,255,0.2); }
+        .btn-danger {
+            flex: 1; padding: 12px; background: var(--error); color: white;
+            border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
+        }
+        .btn-danger:active { background: #dc2626; }
+
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
 
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal-content">
+            <h3>Settings</h3>
+            <p style="margin-bottom: 25px;">Manage your account</p>
+            <button class="btn-danger" style="width: 100%; margin-bottom: 10px;" onclick="confirmLogout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+            <button class="btn-secondary" style="width: 100%;" onclick="closeModal('settings-modal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal (Delete/Logout) -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-content">
+            <h3 id="confirm-title">Are you sure?</h3>
+            <p id="confirm-message">This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeModal('confirm-modal')">Cancel</button>
+                <button class="btn-danger" id="confirm-yes-btn">Yes</button>
+            </div>
+        </div>
+    </div>
+
     <div class="navbar">
         <div class="logo">Yunam</div>
-        <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-power-off"></i></button>
+        <button class="settings-btn" onclick="openModal('settings-modal')"><i class="fa-solid fa-gear"></i></button>
     </div>
 
     <div class="container">
@@ -215,8 +229,8 @@
             </div>
             
             <div class="form-group">
-                <label>Your Public Bio</label>
-                <input type="text" id="profile-bio" placeholder="e.g. Tech Lover | Developer" maxlength="100">
+                <label>Your Public Bio (Max 300 chars)</label>
+                <textarea id="profile-bio" placeholder="e.g. Tech Lover | Developer | Content Creator" maxlength="300"></textarea>
             </div>
             <button class="btn-primary" onclick="updateProfile()" id="save-profile-btn">
                 <i class="fa-solid fa-floppy-disk"></i> Save Profile
@@ -256,14 +270,36 @@
         <!-- Links List Section -->
         <div class="glass-card">
             <div class="section-title"><i class="fa-solid fa-list-ul"></i> Your Links</div>
-            <div class="links-list" id="links-container">
-                <!-- Links JS se yahan aayenge -->
-            </div>
+            <div class="links-list" id="links-container"></div>
         </div>
     </div>
 
     <script>
         let currentUser = null;
+        let confirmCallback = null;
+
+        // Dictionary for Display Names
+        const iconNames = {
+            'fa-whatsapp': 'WhatsApp', 'fa-instagram': 'Instagram', 'fa-youtube': 'YouTube',
+            'fa-github': 'GitHub', 'fa-twitter': 'Twitter/X', 'fa-facebook': 'Facebook', 
+            'fa-envelope': 'Email', 'fa-link': 'Other', 'fa-globe': 'Website'
+        };
+
+        // Modal Control Functions
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function openConfirm(title, message, callback) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-message').innerText = message;
+            confirmCallback = callback;
+            openModal('confirm-modal');
+        }
+        
+        document.getElementById('confirm-yes-btn').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            closeModal('confirm-modal');
+        });
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -275,24 +311,30 @@
             setTimeout(() => { toast.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        // 🔥 FIXED: Strict URL Validation 🔥
         function isValidUrl(string) {
             try {
+                if (string.startsWith('mailto:')) return true; // Accept Email
                 const url = new URL(string);
-                // Check karega ke protocol http/https hai aur domain mein dot (.) majood hai
                 return url.hostname.includes('.') && (url.protocol === "http:" || url.protocol === "https:");
-            } catch (_) {
-                return false;  
-            }
+            } catch (_) { return false; }
+        }
+
+        // 🔥 SMART LINK DETECTOR 🔥
+        function detectPlatform(url) {
+            const u = url.toLowerCase();
+            if (u.includes('wa.me') || u.includes('whatsapp.com')) return 'fa-whatsapp';
+            if (u.includes('instagram.com')) return 'fa-instagram';
+            if (u.includes('youtube.com') || u.includes('youtu.be')) return 'fa-youtube';
+            if (u.includes('github.com')) return 'fa-github';
+            if (u.includes('twitter.com') || u.includes('x.com')) return 'fa-twitter';
+            if (u.includes('facebook.com')) return 'fa-facebook';
+            if (u.startsWith('mailto:')) return 'fa-envelope';
+            return null; // Unknown platform
         }
 
         async function initDashboard() {
             const { data: { session } } = await supabaseClient.auth.getSession();
-            
-            if (!session) {
-                window.location.href = 'index.html'; 
-                return;
-            }
+            if (!session) { window.location.href = 'index.html'; return; }
 
             currentUser = session.user;
             document.getElementById('display-email').innerText = currentUser.email;
@@ -308,23 +350,14 @@
                 document.getElementById('display-username').innerText = '@' + metaUsername;
                 document.getElementById('user-avatar').innerText = metaUsername.charAt(0).toUpperCase();
             }
-
             loadLinks();
         }
 
         async function loadLinks() {
             const container = document.getElementById('links-container');
-            
-            const { data: links, error } = await supabaseClient
-                .from('links')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .order('order_index', { ascending: true });
+            const { data: links, error } = await supabaseClient.from('links').select('*').eq('user_id', currentUser.id).order('order_index', { ascending: true });
 
-            if (error) { 
-                showToast("Failed to load links!", "error"); 
-                return; 
-            }
+            if (error) { showToast("Failed to load links!", "error"); return; }
 
             container.innerHTML = ''; 
 
@@ -336,20 +369,19 @@
             links.forEach((link, index) => {
                 const div = document.createElement('div');
                 div.className = 'link-item';
-                // 🔥 FIXED: Link Content is now an anchor (<a>) tag to open links 🔥
+                // Link is now fully clickable using onclick to avoid nesting issues
                 div.innerHTML = `
-                    <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="link-content">
+                    <div class="link-content" onclick="window.open('${link.url}', '_blank')">
                         <div class="icon"><i class="fa-brands ${link.icon || 'fa-solid fa-link'}"></i></div>
                         <div class="text">
                             <h3>${link.title}</h3>
                             <p>${link.url.replace(/^https?:\/\//, '')}</p>
                         </div>
-                    </a>
+                    </div>
                     <div class="link-actions">
                         ${index > 0 ? `<button class="action-btn" onclick="moveLink(${link.id}, -1)"><i class="fa-solid fa-arrow-up"></i></button>` : ''}
                         ${index < links.length - 1 ? `<button class="action-btn" onclick="moveLink(${link.id}, 1)"><i class="fa-solid fa-arrow-down"></i></button>` : ''}
-                        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="action-btn open-link" title="Open Link"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                        <button class="action-btn delete" onclick="deleteLink(${link.id})"><i class="fa-solid fa-trash"></i></button>
+                        <button class="action-btn delete" onclick="promptDelete(${link.id})"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 `;
                 container.appendChild(div);
@@ -372,22 +404,36 @@
         async function addLink() {
             const title = document.getElementById('link-title').value.trim();
             let url = document.getElementById('link-url').value.trim();
-            const icon = document.getElementById('link-icon').value;
+            let icon = document.getElementById('link-icon').value;
             const btn = document.getElementById('add-link-btn');
 
-            if (!title || !url) { 
-                showToast("Title and URL are required!", "error"); 
-                return; 
-            }
+            if (!title || !url) { showToast("Title and URL are required!", "error"); return; }
 
-            if (!url.startsWith('http://') && !url.startsWith('https://')) { 
+            // Handle Email special case
+            if (icon === 'fa-envelope' && !url.startsWith('mailto:') && url.includes('@')) {
+                url = 'mailto:' + url;
+            } else if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('mailto:')) { 
                 url = 'https://' + url; 
             }
 
-            // Apply Strict Validation
             if (!isValidUrl(url)) {
                 showToast("Invalid URL! Please enter a valid link (e.g., google.com).", "error");
                 return;
+            }
+
+            // 🔥 SMART ICON VALIDATION & AUTO-DETECT 🔥
+            const detectedIcon = detectPlatform(url);
+            
+            if (detectedIcon) {
+                if (icon !== 'fa-link' && icon !== detectedIcon) {
+                    // User selected specific icon but link doesn't match
+                    showToast(`Mismatch! You selected ${iconNames[icon]} but link is for ${iconNames[detectedIcon]}.`, "error");
+                    return;
+                } else if (icon === 'fa-link') {
+                    // User selected "Other", auto-switch to detected platform
+                    icon = detectedIcon;
+                    showToast(`Detected ${iconNames[detectedIcon]} link, icon auto-updated!`, "info");
+                }
             }
 
             btn.innerHTML = '<div class="spinner"></div>';
@@ -396,11 +442,7 @@
             const newIndex = existingLinks && existingLinks.length > 0 ? existingLinks[0].order_index + 1 : 0;
 
             const { error } = await supabaseClient.from('links').insert([{
-                user_id: currentUser.id,
-                title: title,
-                url: url,
-                icon: icon,
-                order_index: newIndex
+                user_id: currentUser.id, title: title, url: url, icon: icon, order_index: newIndex
             }]);
 
             if (error) {
@@ -414,18 +456,17 @@
             btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Link';
         }
 
-        async function deleteLink(id) {
-            const confirmed = confirm("Are you sure you want to delete this link?");
-            if (!confirmed) return;
-
-            const { error } = await supabaseClient.from('links').delete().eq('id', id);
-            if (error) showToast("Failed to delete link!", "error");
-            else { showToast("Link deleted", "success"); loadLinks(); }
+        // 🔥 CUSTOM DELETE MODAL 🔥
+        function promptDelete(id) {
+            openConfirm("Delete Link", "Are you sure you want to delete this link?", async () => {
+                const { error } = await supabaseClient.from('links').delete().eq('id', id);
+                if (error) showToast("Failed to delete link!", "error");
+                else { showToast("Link deleted", "success"); loadLinks(); }
+            });
         }
 
         async function moveLink(id, direction) {
             const { data: links } = await supabaseClient.from('links').select('*').eq('user_id', currentUser.id).order('order_index', { ascending: true });
-            
             const currentIndex = links.findIndex(l => l.id === id);
             const targetIndex = currentIndex + direction;
 
@@ -443,9 +484,12 @@
             loadLinks(); 
         }
 
-        async function logout() {
-            await supabaseClient.auth.signOut();
-            window.location.href = 'index.html';
+        // 🔥 SETTINGS & LOGOUT 🔥
+        function confirmLogout() {
+            openConfirm("Logout", "Are you sure you want to logout?", async () => {
+                await supabaseClient.auth.signOut();
+                window.location.href = 'index.html';
+            });
         }
 
         window.onload = initDashboard;
