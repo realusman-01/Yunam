@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- 🔥 ZOOMING REMOVE KARNE WALA META TAG 🔥 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard - Yunam</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Config File -->
+    <script src="config.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(20, 27, 45, 0.7);
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        /* 🔥 BLUE TAP EFFECT REMOVE 🔥 */
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Ganda blue effect khatam */
+            touch-action: manipulation; /* Double tap zoom khatam */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.1), transparent 30%),
+                radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.1), transparent 30%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 50px;
+        }
+
+        /* Top Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            padding: 15px 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .logo { font-size: 20px; font-weight: 700; color: #818cf8; }
+        .logout-btn { background: transparent; border: none; color: var(--error); font-size: 18px; cursor: pointer; padding: 5px; }
+
+        .container { max-width: 600px; margin: 0 auto; }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 35px -10px rgba(0,0,0,0.4);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .section-title { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .section-title i { color: var(--primary); }
+
+        /* Profile Section */
+        .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .avatar-circle {
+            width: 65px; height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; font-weight: 700; color: #fff;
+            border: 2px solid var(--border);
+        }
+        
+        .user-info h2 { font-size: 18px; margin-bottom: 4px; }
+        .user-info p { font-size: 13px; color: var(--text-muted); }
+
+        /* Inputs & Forms */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+            appearance: none; /* Removes default select arrow */
+        }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+
+        .btn-primary {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: all 0.3s;
+            display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* Links List */
+        .links-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+        
+        .link-item {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.3s;
+        }
+        .link-item:active { background: rgba(255,255,255,0.05); }
+
+        .link-content { display: flex; align-items: center; gap: 12px; overflow: hidden; }
+        .link-content .icon { width: 35px; height: 35px; border-radius: 8px; background: rgba(99, 102, 241, 0.2); display: flex; justify-content: center; align-items: center; color: var(--primary); font-size: 16px; flex-shrink: 0; }
+        .link-content .text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .link-content h3 { font-size: 14px; font-weight: 600; }
+        .link-content p { font-size: 11px; color: var(--text-muted); }
+
+        .link-actions { display: flex; gap: 5px; flex-shrink: 0; }
+        .action-btn {
+            background: transparent; border: none; color: var(--text-muted);
+            width: 32px; height: 32px; border-radius: 8px;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; font-size: 14px; transition: 0.2s;
+        }
+        .action-btn:active { background: rgba(255,255,255,0.1); color: var(--text-main); }
+        .action-btn.delete:active { color: var(--error); background: rgba(239, 68, 68, 0.1); }
+
+        /* Toasts */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 350px; }
+        .toast { background: #1e293b; color: #fff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; animation: slideDown 0.3s ease forwards; }
+        .toast.error { border-left-color: var(--error); }
+        .toast.success { border-left-color: var(--success); }
+        .toast i { font-size: 18px; }
+        .toast.error i { color: var(--error); }
+        .toast.success i { color: var(--success); }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+        
+        .spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff; width: 18px; height: 18px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">Yunam.</div>
+        <button class="logout-btn" onclick="logout()"><i class="fa-solid fa-power-off"></i></button>
+    </div>
+
+    <div class="container">
+        <!-- Profile Section -->
+        <div class="glass-card">
+            <div class="profile-header">
+                <div class="avatar-circle" id="user-avatar">U</div>
+                <div class="user-info">
+                    <h2 id="display-username">Loading...</h2>
+                    <p id="display-email">Loading...</p>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Your Public Bio</label>
+                <input type="text" id="profile-bio" placeholder="e.g. Tech Lover | Developer" maxlength="100">
+            </div>
+            <button class="btn-primary" onclick="updateProfile()" id="save-profile-btn">
+                <i class="fa-solid fa-floppy-disk"></i> Save Profile
+            </button>
+        </div>
+
+        <!-- Add New Link Section -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fa-solid fa-plus-circle"></i> Add New Link</div>
+            <div class="form-group">
+                <label>Title (e.g. My Instagram)</label>
+                <input type="text" id="link-title" placeholder="Enter link title" maxlength="30">
+            </div>
+            <div class="form-group">
+                <label>URL (Link)</label>
+                <input type="url" id="link-url" placeholder="https://...">
+            </div>
+            <div class="form-group">
+                <label>Select Icon</label>
+                <select id="link-icon">
+                    <option value="fa-instagram">Instagram</option>
+                    <option value="fa-youtube">YouTube</option>
+                    <option value="fa-github">GitHub</option>
+                    <option value="fa-whatsapp">WhatsApp</option>
+                    <option value="fa-twitter">Twitter / X</option>
+                    <option value="fa-facebook">Facebook</option>
+                    <option value="fa-globe">Website</option>
+                    <option value="fa-envelope">Email</option>
+                    <option value="fa-link">Other Link</option>
+                </select>
+            </div>
+            <button class="btn-primary" onclick="addLink()" id="add-link-btn">
+                <i class="fa-solid fa-plus"></i> Add Link
+            </button>
+        </div>
+
+        <!-- Links List Section -->
+        <div class="glass-card">
+            <div class="section-title"><i class="fa-solid fa-list-ul"></i> Your Links</div>
+            <div class="links-list" id="links-container">
+                <!-- Links JS se yahan aayenge -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // Toast Function
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            let icon = type === 'error' ? 'fa-circle-exclamation' : (type === 'success' ? 'fa-circle-check' : 'fa-circle-info');
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        // 1. Check Auth & Load Data
+        async function initDashboard() {
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            
+            if (!session) {
+                window.location.href = 'index.html'; // Agar login nahi hai toh wapas bhejo
+                return;
+            }
+
+            currentUser = session.user;
+            document.getElementById('display-email').innerText = currentUser.email;
+
+            // Fetch Profile Data
+            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+            if (profile) {
+                document.getElementById('display-username').innerText = '@' + profile.username;
+                document.getElementById('user-avatar').innerText = profile.username.charAt(0).toUpperCase();
+                if (profile.bio) document.getElementById('profile-bio').value = profile.bio;
+            }
+
+            loadLinks();
+        }
+
+        // 2. Load Links from Database
+        async function loadLinks() {
+            const container = document.getElementById('links-container');
+            container.innerHTML = '<p style="color:var(--text-muted); font-size:14px; text-align:center;">Loading links...</p>';
+
+            const { data: links, error } = await supabaseClient
+                .from('links')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .order('order_index', { ascending: true });
+
+            if (error) { showToast("Links load nahi ho sake!", "error"); return; }
+
+            container.innerHTML = '';
+            if (links.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted); font-size:14px; text-align:center;">Abhi koi link nahi hai. Upar se add karein!</p>';
+                return;
+            }
+
+            links.forEach((link, index) => {
+                const div = document.createElement('div');
+                div.className = 'link-item';
+                div.innerHTML = `
+                    <div class="link-content">
+                        <div class="icon"><i class="fa-brands ${link.icon || 'fa-solid fa-link'}"></i></div>
+                        <div class="text">
+                            <h3>${link.title}</h3>
+                            <p>${link.url.replace(/^https?:\/\//, '')}</p>
+                        </div>
+                    </div>
+                    <div class="link-actions">
+                        ${index > 0 ? `<button class="action-btn" onclick="moveLink(${link.id}, -1)"><i class="fa-solid fa-arrow-up"></i></button>` : ''}
+                        ${index < links.length - 1 ? `<button class="action-btn" onclick="moveLink(${link.id}, 1)"><i class="fa-solid fa-arrow-down"></i></button>` : ''}
+                        <button class="action-btn delete" onclick="deleteLink(${link.id})"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // 3. Update Profile
+        async function updateProfile() {
+            const bio = document.getElementById('profile-bio').value;
+            const btn = document.getElementById('save-profile-btn');
+            btn.innerHTML = '<div class="spinner"></div>';
+            
+            const { error } = await supabaseClient.from('profiles').update({ bio: bio }).eq('id', currentUser.id);
+            
+            if (error) showToast("Bio update nahi hui!", "error");
+            else showToast("Profile updated successfully!", "success");
+            
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Profile';
+        }
+
+        // 4. Add Link
+        async function addLink() {
+            const title = document.getElementById('link-title').value.trim();
+            let url = document.getElementById('link-url').value.trim();
+            const icon = document.getElementById('link-icon').value;
+            const btn = document.getElementById('add-link-btn');
+
+            if (!title || !url) { showToast("Title aur URL dono likhna zaroori hai!", "error"); return; }
+            if (!url.startsWith('http://') && !url.startsWith('https://')) { url = 'https://' + url; }
+
+            btn.innerHTML = '<div class="spinner"></div>';
+
+            // Get highest order_index
+            const { data: existingLinks } = await supabaseClient.from('links').select('order_index').eq('user_id', currentUser.id).order('order_index', { ascending: false }).limit(1);
+            const newIndex = existingLinks && existingLinks.length > 0 ? existingLinks[0].order_index + 1 : 0;
+
+            const { error } = await supabaseClient.from('links').insert([{
+                user_id: currentUser.id,
+                title: title,
+                url: url,
+                icon: icon,
+                order_index: newIndex
+            }]);
+
+            if (error) {
+                showToast("Link add nahi hua: " + error.message, "error");
+            } else {
+                showToast("Link added successfully!", "success");
+                document.getElementById('link-title').value = '';
+                document.getElementById('link-url').value = '';
+                loadLinks(); // Refresh list
+            }
+            btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Link';
+        }
+
+        // 5. Delete Link
+        async function deleteLink(id) {
+            // Professional way to confirm without ugly popup
+            const confirmed = confirm("Kya aap waqai ye link delete karna chahte hain?");
+            if (!confirmed) return;
+
+            const { error } = await supabaseClient.from('links').delete().eq('id', id);
+            if (error) showToast("Delete nahi hua!", "error");
+            else { showToast("Link deleted", "success"); loadLinks(); }
+        }
+
+        // 6. Move Link (Reorder)
+        async function moveLink(id, direction) {
+            // Fetch all links again to calculate new order
+            const { data: links } = await supabaseClient.from('links').select('*').eq('user_id', currentUser.id).order('order_index', { ascending: true });
+            
+            const currentIndex = links.findIndex(l => l.id === id);
+            const targetIndex = currentIndex + direction;
+
+            if (targetIndex < 0 || targetIndex >= links.length) return;
+
+            // Swap order_index
+            const currentLink = links[currentIndex];
+            const targetLink = links[targetIndex];
+            
+            const currentOrder = currentLink.order_index;
+            const targetOrder = targetLink.order_index;
+
+            // Update both in DB
+            await supabaseClient.from('links').update({ order_index: targetOrder }).eq('id', currentLink.id);
+            await supabaseClient.from('links').update({ order_index: currentOrder }).eq('id', targetLink.id);
+            
+            loadLinks(); // Refresh
+        }
+
+        // 7. Logout
+        async function logout() {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        }
+
+        // Run on page load
+        window.onload = initDashboard;
+    </script>
+</body>
+</html>
