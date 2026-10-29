@@ -77,25 +77,42 @@
         .user-info h2 { font-size: 18px; margin-bottom: 4px; }
         .user-info p { font-size: 13px; color: var(--text-muted); }
 
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
         
-        input, select, textarea {
+        input, textarea, .select-trigger {
             width: 100%; padding: 12px 15px;
             background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border);
             color: var(--text-main); border-radius: 10px; font-size: 14px;
-            outline: none; transition: all 0.3s ease; appearance: none; -webkit-appearance: none;
+            outline: none; transition: all 0.3s ease;
         }
 
         textarea { resize: none; min-height: 80px; max-height: 120px; line-height: 1.5; }
 
-        input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+        input:focus, textarea:focus, .select-trigger:active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
-        select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; cursor: pointer;
+        /* 🔥 CUSTOM DROPDOWN CSS 🔥 */
+        .custom-select { position: relative; width: 100%; }
+        .select-trigger {
+            display: flex; justify-content: space-between; align-items: center; cursor: pointer;
         }
-        select option { background-color: #1e293b; color: #f8fafc; padding: 10px; }
+        .select-options {
+            position: absolute; top: 105%; left: 0; width: 100%;
+            background: #1e293b; border: 1px solid var(--border); border-radius: 10px;
+            z-index: 100; max-height: 200px; overflow-y: auto; display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .select-options.active { display: block; animation: fadeIn 0.2s ease; }
+        .select-option {
+            padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 12px;
+            font-size: 14px; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .select-option:last-child { border-bottom: none; }
+        .select-option:active, .select-option:hover { background: rgba(99, 102, 241, 0.2); }
+        .select-option i { width: 20px; text-align: center; color: var(--primary); }
+        
+        .select-options::-webkit-scrollbar { width: 6px; }
+        .select-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
 
         .btn-primary {
             width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-hover));
@@ -239,20 +256,49 @@
                 <label>URL (Link)</label>
                 <input type="url" id="link-url" placeholder="https://...">
             </div>
+            
+            <!-- 🔥 CUSTOM DROPDOWN 🔥 -->
             <div class="form-group">
                 <label>Select Icon / Platform</label>
-                <select id="link-icon">
-                    <option value="fa-link">Other Link (Auto-Detect)</option>
-                    <option value="fa-globe">Generic Website</option>
-                    <option value="fa-instagram">Instagram</option>
-                    <option value="fa-youtube">YouTube</option>
-                    <option value="fa-github">GitHub</option>
-                    <option value="fa-whatsapp">WhatsApp</option>
-                    <option value="fa-twitter">Twitter / X</option>
-                    <option value="fa-facebook">Facebook</option>
-                    <option value="fa-envelope">Email</option>
-                </select>
+                <div class="custom-select" id="custom-icon-select">
+                    <div class="select-trigger" onclick="toggleDropdown()">
+                        <span id="selected-icon-text"><i class="fa-solid fa-link"></i> Other Link (Auto-Detect)</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <div class="select-options" id="select-options">
+                        <div class="select-option" onclick="selectOption('fa-link', 'fa-solid fa-link', 'Other Link (Auto-Detect)')">
+                            <i class="fa-solid fa-link"></i> Other Link (Auto-Detect)
+                        </div>
+                        <div class="select-option" onclick="selectOption('fa-globe', 'fa-solid fa-globe', 'Generic Website')">
+                            <i class="fa-solid fa-globe"></i> Generic Website
+                        </div>
+                        <div class="select-option" onclick="selectOption('fa-instagram', 'fa-brands fa-instagram', 'Instagram')">
+                            <i class="fa-brands fa-instagram"></i> Instagram
+                        </div>
+                        <div class="select-option" onclick="selectOption('fa-youtube', 'fa-brands fa-youtube', 'YouTube')">
+                            <i class="fa-brands fa-youtube"></i> YouTube
+                        </div>
+                        <div class="select-option" onclick="selectOption('fa-github', 'fa-brands fa-github', 'GitHub')">
+                            <i class="fa-brands fa-github"></i> GitHub
+                        </div>
+                        <div class="select-option" onclick="selectOption('fa-whatsapp', 'fa-brands fa-whatsapp', 'WhatsApp')">
+                            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                        </div>
+                        <div class="select-option" onclick="selectOption('fa-twitter', 'fa-brands fa-twitter', 'Twitter / X')">
+                            <i class="fa-brands fa-twitter"></i> Twitter / X
+                        </div>
+                        <div class="select-option" onclick="selectOption('fa-facebook', 'fa-brands fa-facebook', 'Facebook')">
+                            <i class="fa-brands fa-facebook"></i> Facebook
+                        </div>
+                        <div class="select-option" onclick="selectOption('fa-envelope', 'fa-solid fa-envelope', 'Email')">
+                            <i class="fa-solid fa-envelope"></i> Email
+                        </div>
+                    </div>
+                </div>
+                <!-- Hidden input to store dropdown value -->
+                <input type="hidden" id="link-icon" value="fa-link">
             </div>
+
             <button class="btn-primary" onclick="addLink()" id="add-link-btn">
                 <i class="fa-solid fa-plus"></i> Add Link
             </button>
@@ -273,6 +319,25 @@
             'fa-github': 'GitHub', 'fa-twitter': 'Twitter/X', 'fa-facebook': 'Facebook', 
             'fa-envelope': 'Email', 'fa-link': 'Other', 'fa-globe': 'Website'
         };
+
+        // 🔥 Custom Dropdown Logic 🔥
+        function toggleDropdown() {
+            document.getElementById('select-options').classList.toggle('active');
+        }
+
+        function selectOption(value, iconClass, label) {
+            document.getElementById('link-icon').value = value;
+            document.getElementById('selected-icon-text').innerHTML = `<i class="${iconClass}"></i> ${label}`;
+            document.getElementById('select-options').classList.remove('active');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const select = document.getElementById('custom-icon-select');
+            if (select && !select.contains(event.target)) {
+                document.getElementById('select-options').classList.remove('active');
+            }
+        });
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
@@ -299,15 +364,23 @@
             setTimeout(() => { toast.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
+        // 🔥 Strict URL Validation (Catches .app or .com without domain) 🔥
         function isValidUrl(string) {
             try {
-                if (string.startsWith('mailto:')) return true; 
+                if (string.startsWith('mailto:')) {
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(string.replace('mailto:', ''));
+                }
                 const url = new URL(string);
-                return url.hostname.includes('.') && (url.protocol === "http:" || url.protocol === "https:");
+                if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+                
+                const hostParts = url.hostname.split('.');
+                if (hostParts.length < 2 || hostParts.some(part => part.length === 0)) return false; 
+                if (hostParts[hostParts.length - 1].length < 2) return false; // TLD must be at least 2 chars
+
+                return true;
             } catch (_) { return false; }
         }
 
-        // 🔥 SMART DETECTOR (Ab generic websites ke liye 'fa-globe' return karega) 🔥
         function detectPlatform(url) {
             const u = url.toLowerCase();
             if (u.includes('wa.me') || u.includes('whatsapp.com')) return 'fa-whatsapp';
@@ -317,7 +390,14 @@
             if (u.includes('twitter.com') || u.includes('x.com')) return 'fa-twitter';
             if (u.includes('facebook.com')) return 'fa-facebook';
             if (u.startsWith('mailto:')) return 'fa-envelope';
-            return 'fa-globe'; // Default agar koi specific platform nahi mila
+            return 'fa-globe'; 
+        }
+
+        // 🔥 Fix broken icons in list 🔥
+        function getIconClass(icon) {
+            const brands = ['fa-instagram', 'fa-youtube', 'fa-github', 'fa-whatsapp', 'fa-twitter', 'fa-facebook'];
+            if (brands.includes(icon)) return `fa-brands ${icon}`;
+            return `fa-solid ${icon}`;
         }
 
         async function initDashboard() {
@@ -360,7 +440,7 @@
                 
                 div.innerHTML = `
                     <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="link-content">
-                        <div class="icon"><i class="fa-brands ${link.icon || 'fa-solid fa-link'}"></i></div>
+                        <div class="icon"><i class="${getIconClass(link.icon)}"></i></div>
                         <div class="text">
                             <h3>${link.title}</h3>
                             <p>${link.url.replace(/^https?:\/\//, '')}</p>
@@ -407,32 +487,29 @@
                 url = 'https://' + url; 
             }
 
+            // Validation Check
             if (!isValidUrl(url)) {
-                showToast("Invalid URL! Please enter a valid link.", "error");
+                showToast("Invalid URL! Please enter a complete domain (e.g., google.com).", "error");
                 return;
             }
 
-            // 🔥 SMART VALIDATION LOGIC 🔥
+            // Smart Logic
             const detectedIcon = detectPlatform(url);
 
-            // 1. Agar user ne "Other" select kiya hai (Auto-Detect)
             if (userSelectedIcon === 'fa-link') {
-                userSelectedIcon = detectedIcon; // Icon ko auto update kar do
+                userSelectedIcon = detectedIcon; 
                 if (detectedIcon !== 'fa-globe') {
                     showToast(`Auto-detected ${iconNames[detectedIcon]} link!`, "info");
                 }
             } 
-            // 2. Agar user ne specific platform select kiya aur link generic hai
             else if (userSelectedIcon !== 'fa-globe' && detectedIcon === 'fa-globe') {
                 showToast(`Mismatch! You selected ${iconNames[userSelectedIcon]} but link is a generic website.`, "error");
                 return;
             }
-            // 3. Agar user ne specific platform select kiya aur link kisi aur platform ka hai
             else if (userSelectedIcon !== 'fa-globe' && detectedIcon !== 'fa-globe' && userSelectedIcon !== detectedIcon) {
                 showToast(`Mismatch! You selected ${iconNames[userSelectedIcon]} but link is for ${iconNames[detectedIcon]}.`, "error");
                 return;
             }
-            // 4. Agar user ne "Website" select kiya aur link kisi specific platform ka hai
             else if (userSelectedIcon === 'fa-globe' && detectedIcon !== 'fa-globe') {
                 showToast(`This looks like a ${iconNames[detectedIcon]} link. Please select it from the dropdown.`, "error");
                 return;
