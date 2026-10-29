@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <script src="config.js"></script>
     
     <style>
@@ -20,7 +21,7 @@
             --border: rgba(255, 255, 255, 0.1);
             --error: #ef4444;
             --success: #10b981;
-            --nav-bg: rgba(15, 23, 42, 0.9);
+            --nav-bg: rgba(15, 23, 42, 0.95);
         }
 
         * { 
@@ -31,191 +32,91 @@
 
         body {
             background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.1), transparent 30%),
-                radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.1), transparent 30%);
+            background-image: radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.1), transparent 30%), radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.1), transparent 30%);
             color: var(--text-main);
             min-height: 100vh;
-            padding-bottom: 80px; /* Space for bottom nav */
+            padding-bottom: 80px; 
         }
 
-        /* Navbar Top */
         .navbar {
             display: flex; justify-content: space-between; align-items: center;
             background: var(--card-bg); backdrop-filter: blur(16px);
             border: 1px solid var(--border); padding: 15px 20px; border-radius: 15px;
             margin: 20px auto; max-width: 600px; width: calc(100% - 40px);
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: sticky; top: 10px; z-index: 100;
         }
 
         .logo { font-size: 20px; font-weight: 700; color: #818cf8; }
-        .settings-btn { background: transparent; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; padding: 5px; transition: 0.2s; }
-        .settings-btn:active { color: var(--text-main); transform: rotate(45deg); }
+        .search-bar { flex: 1; margin: 0 15px; position: relative; }
+        .search-bar input { width: 100%; padding: 8px 15px 8px 35px; border-radius: 20px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: white; font-size: 13px; outline: none;}
+        .search-bar i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px;}
 
         .container { max-width: 600px; margin: 0 auto; padding: 0 20px; }
-
-        /* Views */
         .view { display: none; animation: fadeIn 0.4s ease; }
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .glass-card {
-            background: var(--card-bg); backdrop-filter: blur(16px);
-            border: 1px solid var(--border); padding: 25px; border-radius: 20px;
-            margin-bottom: 20px; box-shadow: 0 15px 35px -10px rgba(0,0,0,0.4);
-        }
+        .glass-card { background: var(--card-bg); backdrop-filter: blur(16px); border: 1px solid var(--border); padding: 20px; border-radius: 20px; margin-bottom: 20px; }
 
-        .section-title { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
-        .section-title i { color: var(--primary); }
-
-        /* Home View Styles */
-        .welcome-card { text-align: center; padding: 40px 20px; }
-        .welcome-card h1 { font-size: 24px; margin-bottom: 10px; }
-        .welcome-card p { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; }
-        .coming-soon-box {
-            border: 2px dashed rgba(99, 102, 241, 0.3);
-            background: rgba(99, 102, 241, 0.05);
-            padding: 30px 20px; border-radius: 15px;
-        }
-        .coming-soon-box i { font-size: 40px; color: var(--primary); margin-bottom: 15px; animation: float 2s infinite ease-in-out;}
-        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
-        .coming-soon-box h3 { font-size: 18px; margin-bottom: 5px; }
-        .coming-soon-box p { font-size: 13px; margin-bottom: 0; }
-
-        /* Profile Section */
-        .profile-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .avatar-circle {
-            width: 65px; height: 65px; border-radius: 50%;
-            background: linear-gradient(135deg, #6366f1, #a855f7);
-            display: flex; justify-content: center; align-items: center;
-            font-size: 24px; font-weight: 700; color: #fff; border: 2px solid var(--border);
-        }
-        .user-info h2 { font-size: 18px; margin-bottom: 4px; }
-        .user-info p { font-size: 13px; color: var(--text-muted); }
-
-        .qr-section {
-            display: flex; align-items: center; justify-content: space-between;
-            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-        .qr-section img { width: 80px; height: 80px; border-radius: 8px; background: #fff; padding: 5px; }
-        .qr-text h4 { font-size: 14px; margin-bottom: 4px; }
-        .qr-text p { font-size: 11px; color: var(--text-muted); margin-bottom: 8px;}
-        .btn-small {
-            padding: 6px 12px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; text-decoration: none; display: inline-block;
-        }
-
-        .form-group { margin-bottom: 15px; position: relative; }
-        label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+        .category-chips { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; scrollbar-width: none;}
+        .category-chips::-webkit-scrollbar { display: none; }
+        .chip { padding: 8px 16px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; font-size: 13px; white-space: nowrap; cursor: pointer; transition: 0.2s;}
+        .chip.active { background: var(--primary); border-color: var(--primary); }
         
-        input, textarea, .select-trigger {
-            width: 100%; padding: 12px 15px;
-            background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border);
-            color: var(--text-main); border-radius: 10px; font-size: 14px;
-            outline: none; transition: all 0.3s ease;
-        }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; }
+        .product-card img { width: 100%; height: 150px; object-fit: cover; background: #000; }
+        .product-info { padding: 12px; display: flex; flex-direction: column; flex: 1; }
+        .product-info h4 { font-size: 14px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .product-info .price { font-size: 16px; font-weight: 700; color: var(--success); margin-bottom: 10px; }
+        .product-info .seller { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-top: auto; }
+        .product-info .seller img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover;}
 
-        textarea { resize: none; min-height: 80px; max-height: 120px; line-height: 1.5; }
-        input:focus, textarea:focus, .select-trigger:active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
+        .buy-btn { width: 100%; padding: 8px; background: rgba(99, 102, 241, 0.15); color: var(--primary); border: none; border-radius: 8px; font-weight: 600; font-size: 12px; cursor: pointer; margin-top: 10px;}
+        .buy-btn:active { background: var(--primary); color: white;}
 
-        .custom-select { position: relative; width: 100%; }
-        .select-trigger { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .select-options {
-            position: absolute; top: 105%; left: 0; width: 100%;
-            background: #1e293b; border: 1px solid var(--border); border-radius: 10px;
-            z-index: 100; max-height: 200px; overflow-y: auto; display: none;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-        }
-        .select-options.active { display: block; animation: fadeIn 0.2s ease; }
-        .select-option {
-            padding: 12px 15px; cursor: pointer; display: flex; align-items: center; gap: 12px;
-            font-size: 14px; transition: 0.2s; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .select-option:last-child { border-bottom: none; }
-        .select-option:active, .select-option:hover { background: rgba(99, 102, 241, 0.2); }
-        .select-option i { width: 20px; text-align: center; color: var(--primary); }
+        .settings-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .avatar-upload { position: relative; width: 70px; height: 70px; border-radius: 50%; background: #1e293b; border: 2px solid var(--border); overflow: hidden; display: flex; justify-content: center; align-items: center;}
+        .avatar-upload img { width: 100%; height: 100%; object-fit: cover; }
+        .avatar-upload input { position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .avatar-upload i { font-size: 24px; color: var(--text-muted); }
         
-        .btn-primary {
-            width: 100%; padding: 14px; background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-            color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
-            transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;
-        }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+        input, textarea, select { width: 100%; padding: 12px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); color: white; border-radius: 10px; font-size: 14px; outline: none; }
+        input:focus, textarea:focus, select:focus { border-color: var(--primary); }
+        
+        .btn-primary { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;}
         .btn-primary:active { transform: scale(0.98); }
 
-        .links-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-        .link-item {
-            background: rgba(0,0,0,0.2); border: 1px solid var(--border);
-            padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;
-        }
-        .link-content { display: flex; align-items: center; gap: 12px; overflow: hidden; flex: 1; cursor: pointer; text-decoration: none; color: inherit; }
-        .link-content .icon { width: 35px; height: 35px; border-radius: 8px; background: rgba(99, 102, 241, 0.2); display: flex; justify-content: center; align-items: center; color: var(--primary); font-size: 16px; flex-shrink: 0; }
-        .link-content .text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .link-content h3 { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
-        .link-content h3 span { font-size: 10px; background: rgba(16, 185, 129, 0.2); color: var(--success); padding: 2px 6px; border-radius: 4px; font-weight: 600;}
-        .link-content p { font-size: 11px; color: var(--text-muted); }
-
-        .link-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
-        .action-btn { background: transparent; border: none; color: var(--text-muted); width: 32px; height: 32px; border-radius: 8px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 14px; text-decoration: none; }
-        .action-btn.delete:active { color: var(--error); background: rgba(239, 68, 68, 0.1); }
-        .action-btn.open-link { color: var(--primary); }
-
-        /* 🔥 BOTTOM NAVIGATION BAR 🔥 */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: var(--nav-bg); backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; align-items: center;
-            padding: 10px 0; z-index: 1000;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
-            color: var(--text-muted); font-size: 12px; font-weight: 600;
-            text-decoration: none; cursor: pointer; transition: 0.3s;
-            padding: 5px 20px; border-radius: 10px;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--text-muted); font-size: 11px; font-weight: 600; cursor: pointer; padding: 5px 20px; transition: 0.3s; }
         .nav-item i { font-size: 20px; }
         .nav-item.active { color: var(--primary); }
-        .nav-item:active { transform: scale(0.9); }
 
-        /* Toasts & Modals */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 350px; }
-        .toast { background: #1e293b; color: #fff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; animation: slideDown 0.3s ease forwards; }
-        .toast.error { border-left-color: var(--error); }
-        .toast.success { border-left-color: var(--success); }
-        .toast.info { border-left-color: #3b82f6; }
+        .toast { background: #1e293b; color: #fff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; animation: slideDown 0.3s ease forwards; }
+        .toast.error { border-left-color: var(--error); } .toast.success { border-left-color: var(--success); }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
-        
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff; width: 18px; height: 18px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px);
-            display: flex; justify-content: center; align-items: center; z-index: 10000;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 10000; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-content {
-            background: #141b2d; border: 1px solid var(--border);
-            padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center;
-            transform: scale(0.9); transition: transform 0.3s ease;
-        }
+        .modal-content { background: #141b2d; padding: 25px; border-radius: 20px; width: 90%; max-width: 350px; text-align: center; transform: scale(0.9); transition: 0.3s; }
         .modal-overlay.active .modal-content { transform: scale(1); }
-        .modal-content h3 { font-size: 18px; margin-bottom: 10px; }
-        .modal-content p { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+        .modal-content h3 { margin-bottom: 10px; } .modal-content p { color: var(--text-muted); margin-bottom: 20px; font-size: 14px;}
         .modal-actions { display: flex; gap: 10px; }
         .btn-secondary { flex: 1; padding: 12px; background: rgba(255,255,255,0.1); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .btn-danger { flex: 1; padding: 12px; background: var(--error); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
-
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
 
-    <!-- Confirm Modal -->
     <div class="modal-overlay" id="confirm-modal">
         <div class="modal-content">
             <h3 id="confirm-title">Are you sure?</h3>
@@ -227,174 +128,133 @@
         </div>
     </div>
 
-    <!-- Top Navbar -->
     <div class="navbar">
         <div class="logo">Yunam</div>
-        <span id="nav-title" style="font-weight: 600; color: var(--text-muted); font-size: 14px;">Home</span>
+        <div class="search-bar" id="search-container" style="display: none;">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="search-input" placeholder="Search products..." onkeyup="handleSearch()">
+        </div>
+        <span id="nav-title" style="font-weight: 600; color: var(--text-muted); font-size: 14px;">Market</span>
     </div>
 
     <div class="container">
         
-        <!-- 🔥 HOME VIEW (Empty for Mini Store) 🔥 -->
         <div id="home-view" class="view active">
-            <div class="glass-card welcome-card">
-                <h1 id="welcome-text">Welcome back! 👋</h1>
-                <p>Your dashboard is looking clean.</p>
-                
-                <div class="coming-soon-box">
-                    <i class="fa-solid fa-store"></i>
-                    <h3>Yunam Mini-Store</h3>
-                    <p>Soon you will be able to add products, set prices, and sell directly from your profile.</p>
-                </div>
+            <div class="category-chips">
+                <div class="chip active" onclick="filterCategory('All', this)">All</div>
+                <div class="chip" onclick="filterCategory('Fashion', this)">Fashion</div>
+                <div class="chip" onclick="filterCategory('Electronics', this)">Electronics</div>
+                <div class="chip" onclick="filterCategory('Services', this)">Services</div>
+                <div class="chip" onclick="filterCategory('Digital', this)">Digital</div>
             </div>
+            <div class="product-grid" id="products-container"></div>
         </div>
 
-        <!-- 🔥 SETTINGS VIEW (All current features moved here) 🔥 -->
         <div id="settings-view" class="view">
             
-            <!-- Profile & QR Card -->
             <div class="glass-card">
-                <div class="profile-header">
-                    <div class="avatar-circle" id="user-avatar">U</div>
+                <h3 class="section-title" style="margin-bottom: 15px; font-size: 16px;"><i class="fa-solid fa-user-pen" style="color: var(--primary);"></i> Manage Yourself</h3>
+                <div class="settings-header">
+                    <div class="avatar-upload">
+                        <img id="avatar-preview" src="" style="display:none;">
+                        <i class="fa-solid fa-camera" id="avatar-icon"></i>
+                        <input type="file" accept="image/*" onchange="uploadAvatar(event)">
+                    </div>
                     <div class="user-info">
-                        <h2 id="display-username">Loading...</h2>
-                        <p id="display-email">Loading...</p>
+                        <h2 id="display-username" style="font-size: 16px;">Loading...</h2>
+                        <p id="display-email" style="font-size: 12px; color: var(--text-muted);">Loading...</p>
                     </div>
-                </div>
-
-                <div class="qr-section">
-                    <div class="qr-text">
-                        <h4>Profile QR Code</h4>
-                        <p>Scan to view public profile</p>
-                        <a href="#" id="qr-download-btn" target="_blank" class="btn-small"><i class="fa-solid fa-download"></i> Download</a>
-                    </div>
-                    <img id="qr-image" src="" alt="QR Code">
                 </div>
 
                 <div class="form-group">
-                    <label>Your Public Bio (Max 300 chars)</label>
-                    <textarea id="profile-bio" placeholder="e.g. Tech Lover | Developer" maxlength="300"></textarea>
+                    <label>Bio / About</label>
+                    <textarea id="profile-bio" placeholder="Tell buyers about yourself..." maxlength="300" style="min-height: 60px;"></textarea>
                 </div>
                 <button class="btn-primary" onclick="updateProfile()" id="save-profile-btn">
-                    <i class="fa-solid fa-floppy-disk"></i> Save Bio
+                    <i class="fa-solid fa-floppy-disk"></i> Save Profile
                 </button>
             </div>
 
-            <!-- Add Link Card -->
             <div class="glass-card">
-                <div class="section-title"><i class="fa-solid fa-plus-circle"></i> Add New Link</div>
-                <div class="form-group">
-                    <label>Title (e.g. My Instagram)</label>
-                    <input type="text" id="link-title" placeholder="Enter link title" maxlength="30">
-                </div>
-                <div class="form-group">
-                    <label>URL (Link)</label>
-                    <input type="url" id="link-url" placeholder="https://...">
-                </div>
+                <h3 class="section-title" style="margin-bottom: 15px; font-size: 16px;"><i class="fa-solid fa-box-open" style="color: var(--primary);"></i> Add Product</h3>
                 
                 <div class="form-group">
-                    <label>Select Icon / Platform</label>
-                    <div class="custom-select" id="custom-icon-select">
-                        <div class="select-trigger" onclick="toggleDropdown()">
-                            <span id="selected-icon-text"><i class="fa-solid fa-link"></i> Other Link (Auto-Detect)</span>
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </div>
-                        <div class="select-options" id="select-options">
-                            <div class="select-option" onclick="selectOption('fa-link', 'fa-solid fa-link', 'Other Link (Auto-Detect)')"><i class="fa-solid fa-link"></i> Other Link (Auto-Detect)</div>
-                            <div class="select-option" onclick="selectOption('fa-globe', 'fa-solid fa-globe', 'Generic Website')"><i class="fa-solid fa-globe"></i> Generic Website</div>
-                            <div class="select-option" onclick="selectOption('fa-instagram', 'fa-brands fa-instagram', 'Instagram')"><i class="fa-brands fa-instagram"></i> Instagram</div>
-                            <div class="select-option" onclick="selectOption('fa-youtube', 'fa-brands fa-youtube', 'YouTube')"><i class="fa-brands fa-youtube"></i> YouTube</div>
-                            <div class="select-option" onclick="selectOption('fa-github', 'fa-brands fa-github', 'GitHub')"><i class="fa-brands fa-github"></i> GitHub</div>
-                            <div class="select-option" onclick="selectOption('fa-whatsapp', 'fa-brands fa-whatsapp', 'WhatsApp')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</div>
-                            <div class="select-option" onclick="selectOption('fa-twitter', 'fa-brands fa-twitter', 'Twitter / X')"><i class="fa-brands fa-twitter"></i> Twitter / X</div>
-                            <div class="select-option" onclick="selectOption('fa-facebook', 'fa-brands fa-facebook', 'Facebook')"><i class="fa-brands fa-facebook"></i> Facebook</div>
-                            <div class="select-option" onclick="selectOption('fa-envelope', 'fa-solid fa-envelope', 'Email')"><i class="fa-solid fa-envelope"></i> Email</div>
-                        </div>
-                    </div>
-                    <input type="hidden" id="link-icon" value="fa-link">
+                    <label>Product Image</label>
+                    <input type="file" id="product-image" accept="image/*" style="padding: 10px;">
                 </div>
-
-                <button class="btn-primary" onclick="addLink()" id="add-link-btn">
-                    <i class="fa-solid fa-plus"></i> Add Link
+                <div class="form-group">
+                    <label>Product Title</label>
+                    <input type="text" id="product-title" placeholder="e.g. Nike Shoes (Original)">
+                </div>
+                <div class="form-group">
+                    <label>Price (PKR)</label>
+                    <input type="number" id="product-price" placeholder="e.g. 2500">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="product-category">
+                        <option value="Fashion">Fashion</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Services">Services</option>
+                        <option value="Digital">Digital</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="product-desc" placeholder="Details about the product..." style="min-height: 60px;"></textarea>
+                </div>
+                <button class="btn-primary" onclick="addProduct()" id="add-product-btn">
+                    <i class="fa-solid fa-plus"></i> Add Product (COD Only)
                 </button>
             </div>
 
-            <!-- Manage Links Card -->
             <div class="glass-card">
-                <div class="section-title"><i class="fa-solid fa-list-ul"></i> Manage Your Links</div>
-                <div class="links-list" id="links-container"></div>
+                <h3 class="section-title" style="margin-bottom: 15px; font-size: 16px;"><i class="fa-solid fa-list" style="color: var(--primary);"></i> My Products</h3>
+                <div id="my-products-list" style="display: flex; flex-direction: column; gap: 10px;"></div>
             </div>
 
-            <!-- Logout Button -->
-            <div class="glass-card" style="padding: 15px;">
-                <button class="btn-danger" style="width: 100%; padding: 14px; font-size: 15px;" onclick="confirmLogout()">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout Account
-                </button>
-            </div>
+            <button class="btn-danger" style="width: 100%; padding: 14px; font-size: 15px; margin-bottom: 20px;" onclick="confirmLogout()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
         </div>
     </div>
 
-    <!-- 🔥 BOTTOM NAVIGATION 🔥 -->
     <div class="bottom-nav">
         <div class="nav-item active" id="nav-home" onclick="switchView('home')">
-            <i class="fa-solid fa-house"></i>
-            <span>Home</span>
+            <i class="fa-solid fa-store"></i><span>Market</span>
         </div>
         <div class="nav-item" id="nav-settings" onclick="switchView('settings')">
-            <i class="fa-solid fa-gear"></i>
-            <span>Settings</span>
+            <i class="fa-solid fa-user-gear"></i><span>Settings</span>
         </div>
     </div>
 
     <script>
         let currentUser = null;
         let confirmCallback = null;
-        let currentUsername = "";
+        let userProfile = null;
+        let currentCategory = 'All';
+        let searchQuery = '';
 
-        // View Switcher (App-like)
         function switchView(view) {
             document.getElementById('home-view').classList.remove('active');
             document.getElementById('settings-view').classList.remove('active');
             document.getElementById('nav-home').classList.remove('active');
             document.getElementById('nav-settings').classList.remove('active');
+            document.getElementById('search-container').style.display = 'none';
 
             if(view === 'home') {
                 document.getElementById('home-view').classList.add('active');
                 document.getElementById('nav-home').classList.add('active');
-                document.getElementById('nav-title').innerText = "Home";
+                document.getElementById('nav-title').innerText = "Market";
+                document.getElementById('search-container').style.display = 'block';
+                loadProducts();
             } else {
                 document.getElementById('settings-view').classList.add('active');
                 document.getElementById('nav-settings').classList.add('active');
                 document.getElementById('nav-title').innerText = "Settings";
+                loadMyProducts();
             }
         }
-
-        function toggleDropdown() { document.getElementById('select-options').classList.toggle('active'); }
-        function selectOption(value, iconClass, label) {
-            document.getElementById('link-icon').value = value;
-            document.getElementById('selected-icon-text').innerHTML = `<i class="${iconClass}"></i> ${label}`;
-            document.getElementById('select-options').classList.remove('active');
-        }
-        document.addEventListener('click', function(event) {
-            const select = document.getElementById('custom-icon-select');
-            if (select && !select.contains(event.target)) {
-                document.getElementById('select-options').classList.remove('active');
-            }
-        });
-
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        function openConfirm(title, message, callback) {
-            document.getElementById('confirm-title').innerText = title;
-            document.getElementById('confirm-message').innerText = message;
-            confirmCallback = callback;
-            openModal('confirm-modal');
-        }
-        document.getElementById('confirm-yes-btn').addEventListener('click', () => {
-            if (confirmCallback) confirmCallback();
-            closeModal('confirm-modal');
-        });
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -406,115 +266,123 @@
             setTimeout(() => { toast.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        function isValidUrl(string) {
-            try {
-                if (string.startsWith('mailto:')) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(string.replace('mailto:', ''));
-                const url = new URL(string);
-                if (url.protocol !== "http:" && url.protocol !== "https:") return false;
-                const hostParts = url.hostname.split('.');
-                if (hostParts.length < 2 || hostParts.some(part => part.length === 0)) return false; 
-                if (hostParts[hostParts.length - 1].length < 2) return false; 
-                return true;
-            } catch (_) { return false; }
+        async function compressImage(file) {
+            const options = { maxSizeMB: 0.2, maxWidthOrHeight: 800, useWebWorker: true };
+            try { return await imageCompression(file, options); } catch (error) { return file; }
         }
 
-        async function checkLinkLive(url) {
-            if (url.startsWith('mailto:')) return true;
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-                await fetch(url, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
-                clearTimeout(timeoutId);
-                return true;
-            } catch (error) { return false; }
-        }
-
-        function detectPlatform(url) {
-            const u = url.toLowerCase();
-            if (u.includes('wa.me') || u.includes('whatsapp.com')) return 'fa-whatsapp';
-            if (u.includes('instagram.com')) return 'fa-instagram';
-            if (u.includes('youtube.com') || u.includes('youtu.be')) return 'fa-youtube';
-            if (u.includes('github.com')) return 'fa-github';
-            if (u.includes('twitter.com') || u.includes('x.com')) return 'fa-twitter';
-            if (u.includes('facebook.com')) return 'fa-facebook';
-            if (u.startsWith('mailto:')) return 'fa-envelope';
-            return 'fa-globe'; 
-        }
-
-        function getIconClass(icon) {
-            const brands = ['fa-instagram', 'fa-youtube', 'fa-github', 'fa-whatsapp', 'fa-twitter', 'fa-facebook'];
-            if (brands.includes(icon)) return `fa-brands ${icon}`;
-            return `fa-solid ${icon}`;
+        // 🔥 IMGBB UPLOAD FUNCTION (No Supabase Storage Used) 🔥
+        async function uploadImage(file, path) {
+            const compressed = await compressImage(file);
+            const formData = new FormData();
+            formData.append('image', compressed);
+            
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error('Image upload failed');
+            return data.data.url;
         }
 
         async function initDashboard() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) { window.location.href = 'index.html'; return; }
-
             currentUser = session.user;
-            document.getElementById('display-email').innerText = currentUser.email;
-            document.getElementById('welcome-text').innerText = "Welcome back! 👋";
-
-            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
             
+            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
             if (profile) {
-                currentUsername = profile.username;
+                userProfile = profile;
                 document.getElementById('display-username').innerText = '@' + profile.username;
-                document.getElementById('user-avatar').innerText = profile.username.charAt(0).toUpperCase();
+                document.getElementById('display-email').innerText = currentUser.email;
                 if (profile.bio) document.getElementById('profile-bio').value = profile.bio;
-                generateQR(profile.username);
+                if (profile.avatar_url) {
+                    document.getElementById('avatar-preview').src = profile.avatar_url;
+                    document.getElementById('avatar-preview').style.display = 'block';
+                    document.getElementById('avatar-icon').style.display = 'none';
+                }
             } else {
-                const metaUsername = currentUser.user_metadata?.username || 'user';
-                currentUsername = metaUsername;
-                document.getElementById('display-username').innerText = '@' + metaUsername;
-                document.getElementById('user-avatar').innerText = metaUsername.charAt(0).toUpperCase();
-                generateQR(metaUsername);
+                document.getElementById('display-username').innerText = '@' + (currentUser.user_metadata?.username || 'user');
+                document.getElementById('display-email').innerText = currentUser.email;
             }
-            loadLinks();
+            
+            switchView('home');
         }
 
-        function generateQR(username) {
-            const profileUrl = window.location.origin + '/u/' + username;
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileUrl)}&bgcolor=ffffff&color=0b0f19`;
-            document.getElementById('qr-image').src = qrUrl;
-            document.getElementById('qr-download-btn').href = qrUrl;
-        }
+        async function loadProducts() {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<div class="spinner" style="margin: 20px auto; grid-column: span 2;"></div>';
 
-        async function loadLinks() {
-            const container = document.getElementById('links-container');
-            const { data: links, error } = await supabaseClient.from('links').select('*').eq('user_id', currentUser.id).order('order_index', { ascending: true });
+            let query = supabaseClient.from('products').select('*, profiles(username, avatar_url)').order('created_at', { ascending: false });
+            if (currentCategory !== 'All') query = query.eq('category', currentCategory);
+            if (searchQuery) query = query.ilike('title', `%${searchQuery}%`);
 
-            if (error) { showToast("Failed to load links!", "error"); return; }
-            container.innerHTML = ''; 
+            const { data: products, error } = await query;
+            if (error) { showToast("Failed to load products", "error"); return; }
 
-            if (links.length === 0) {
-                container.innerHTML = '<p style="color:var(--text-muted); font-size:14px; text-align:center; padding: 20px 0;">No links added yet.</p>';
+            container.innerHTML = '';
+            if (products.length === 0) {
+                container.innerHTML = '<p style="grid-column: span 2; text-align: center; color: var(--text-muted); padding: 20px;">No products found.</p>';
                 return;
             }
 
-            links.forEach((link) => {
-                const div = document.createElement('div');
-                div.className = 'link-item';
-                
-                div.innerHTML = `
-                    <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="link-content">
-                        <div class="icon"><i class="${getIconClass(link.icon)}"></i></div>
-                        <div class="text">
-                            <h3>${link.title} <span>${link.clicks || 0} Clicks</span></h3>
-                            <p>${link.url.replace(/^https?:\/\//, '')}</p>
+            products.forEach(p => {
+                const a = document.createElement('div');
+                a.className = 'product-card';
+                a.innerHTML = `
+                    <img src="${p.image_url || 'https://via.placeholder.com/150'}" alt="${p.title}">
+                    <div class="product-info">
+                        <h4>${p.title}</h4>
+                        <div class="price">Rs. ${p.price}</div>
+                        <div class="seller">
+                            <img src="${p.profiles?.avatar_url || 'https://via.placeholder.com/20'}">
+                            <span>@${p.profiles?.username || 'user'}</span>
                         </div>
-                    </a>
-                    <div class="link-actions">
-                        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="action-btn open-link" title="Open Link">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                        </a>
-                        <button class="action-btn delete" onclick="promptDelete('${link.id}')">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <button class="buy-btn" onclick="buyProduct('${p.title}', '${p.profiles?.username}')">Buy (COD)</button>
                     </div>
                 `;
-                container.appendChild(div);
+                container.appendChild(a);
             });
+        }
+
+        function filterCategory(cat, el) {
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            currentCategory = cat;
+            loadProducts();
+        }
+
+        let searchTimeout;
+        function handleSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                searchQuery = document.getElementById('search-input').value;
+                loadProducts();
+            }, 500);
+        }
+
+        function buyProduct(productName, sellerUsername) {
+            window.location.href = `/u/${sellerUsername}`;
+            showToast("Opening seller profile to contact...", "info");
+        }
+
+        async function uploadAvatar(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            showToast("Uploading image...", "info");
+            
+            try {
+                const url = await uploadImage(file, `avatars/${currentUser.id}`);
+                await supabaseClient.from('profiles').update({ avatar_url: url }).eq('id', currentUser.id);
+                
+                document.getElementById('avatar-preview').src = url;
+                document.getElementById('avatar-preview').style.display = 'block';
+                document.getElementById('avatar-icon').style.display = 'none';
+                showToast("Profile picture updated!", "success");
+            } catch (e) {
+                showToast("Upload failed: " + e.message, "error");
+            }
         }
 
         async function updateProfile() {
@@ -522,86 +390,95 @@
             const btn = document.getElementById('save-profile-btn');
             btn.innerHTML = '<div class="spinner"></div>';
             
-            const { error } = await supabaseClient.from('profiles').update({ bio: bio }).eq('id', currentUser.id);
-            
-            if (error) showToast("Failed to update bio!", "error");
-            else showToast("Bio updated successfully!", "success");
-            
-            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Bio';
+            await supabaseClient.from('profiles').update({ bio: bio }).eq('id', currentUser.id);
+            showToast("Profile saved!", "success");
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Profile';
         }
 
-        async function addLink() {
-            const title = document.getElementById('link-title').value.trim();
-            let url = document.getElementById('link-url').value.trim();
-            let userSelectedIcon = document.getElementById('link-icon').value;
-            const btn = document.getElementById('add-link-btn');
+        async function addProduct() {
+            const title = document.getElementById('product-title').value.trim();
+            const price = document.getElementById('product-price').value;
+            const cat = document.getElementById('product-category').value;
+            const desc = document.getElementById('product-desc').value.trim();
+            const file = document.getElementById('product-image').files[0];
+            const btn = document.getElementById('add-product-btn');
 
-            if (!title || !url) { showToast("Title and URL are required!", "error"); return; }
-
-            if (userSelectedIcon === 'fa-envelope' && !url.startsWith('mailto:') && url.includes('@')) {
-                url = 'mailto:' + url;
-            } else if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('mailto:')) { 
-                url = 'https://' + url; 
-            }
-
-            if (!isValidUrl(url)) {
-                showToast("Invalid URL! Please enter a complete domain.", "error");
-                return;
-            }
-
-            const detectedIcon = detectPlatform(url);
-
-            if (userSelectedIcon === 'fa-link') {
-                userSelectedIcon = detectedIcon; 
-            } 
-            else if (userSelectedIcon !== 'fa-globe' && detectedIcon === 'fa-globe') {
-                showToast(`Mismatch! You selected ${iconNames[userSelectedIcon]} but link is a generic website.`, "error");
-                return;
-            }
-            else if (userSelectedIcon !== 'fa-globe' && detectedIcon !== 'fa-globe' && userSelectedIcon !== detectedIcon) {
-                showToast(`Mismatch! You selected ${iconNames[userSelectedIcon]} but link is for ${iconNames[detectedIcon]}.`, "error");
-                return;
-            }
-            else if (userSelectedIcon === 'fa-globe' && detectedIcon !== 'fa-globe') {
-                showToast(`This looks like a ${iconNames[detectedIcon]} link. Please select it from the dropdown.`, "error");
-                return;
-            }
+            if (!title || !price) { showToast("Title and Price required!", "error"); return; }
+            if (!file) { showToast("Please select an image!", "error"); return; }
 
             btn.innerHTML = '<div class="spinner"></div>';
-            
-            const isLive = await checkLinkLive(url);
-            if (!isLive) {
-                showToast("Link unreachable! The website doesn't exist or is down.", "error");
-                btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Link';
-                return;
+
+            try {
+                const imageUrl = await uploadImage(file, `products/${currentUser.id}`);
+                
+                const { error } = await supabaseClient.from('products').insert([{
+                    seller_id: currentUser.id,
+                    title: title,
+                    price: parseFloat(price),
+                    category: cat,
+                    description: desc,
+                    image_url: imageUrl
+                }]);
+
+                if (error) throw error;
+
+                showToast("Product added successfully!", "success");
+                document.getElementById('product-title').value = '';
+                document.getElementById('product-price').value = '';
+                document.getElementById('product-desc').value = '';
+                document.getElementById('product-image').value = '';
+                loadMyProducts();
+            } catch (e) {
+                showToast("Failed: " + e.message, "error");
             }
-
-            const { data: existingLinks } = await supabaseClient.from('links').select('order_index').eq('user_id', currentUser.id).order('order_index', { ascending: false }).limit(1);
-            const newIndex = existingLinks && existingLinks.length > 0 ? existingLinks[0].order_index + 1 : 0;
-
-            const { error } = await supabaseClient.from('links').insert([{
-                user_id: currentUser.id, title: title, url: url, icon: userSelectedIcon, order_index: newIndex, clicks: 0
-            }]);
-
-            if (error) {
-                showToast("Failed to add link: " + error.message, "error");
-            } else {
-                showToast("Link verified & added successfully!", "success");
-                document.getElementById('link-title').value = '';
-                document.getElementById('link-url').value = '';
-                loadLinks(); 
-            }
-            btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Link';
+            btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Product (COD Only)';
         }
 
-        function promptDelete(id) {
-            openConfirm("Delete Link", "Are you sure you want to delete this link?", async () => {
-                const { error } = await supabaseClient.from('links').delete().eq('id', id);
-                if (error) showToast("Failed to delete link!", "error");
-                else { showToast("Link deleted successfully", "success"); loadLinks(); }
+        async function loadMyProducts() {
+            const list = document.getElementById('my-products-list');
+            const { data: products } = await supabaseClient.from('products').select('*').eq('seller_id', currentUser.id).order('created_at', { ascending: false });
+            
+            list.innerHTML = '';
+            if (!products || products.length === 0) {
+                list.innerHTML = '<p style="font-size:12px; color:var(--text-muted);">No products added yet.</p>';
+                return;
+            }
+            products.forEach(p => {
+                list.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2); padding:10px; border-radius:10px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <img src="${p.image_url}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;">
+                            <div>
+                                <h4 style="font-size:13px;">${p.title}</h4>
+                                <span style="font-size:11px; color:var(--success);">Rs. ${p.price}</span>
+                            </div>
+                        </div>
+                        <button class="action-btn delete" onclick="deleteProduct('${p.id}')" style="color:var(--error);"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
             });
         }
 
+        function deleteProduct(id) {
+            openConfirm("Delete Product", "Remove this product?", async () => {
+                await supabaseClient.from('products').delete().eq('id', id);
+                showToast("Deleted", "success");
+                loadMyProducts();
+            });
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function openConfirm(title, message, callback) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-message').innerText = message;
+            confirmCallback = callback;
+            openModal('confirm-modal');
+        }
+        document.getElementById('confirm-yes-btn').addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+            closeModal('confirm-modal');
+        });
         function confirmLogout() {
             openConfirm("Logout", "Are you sure you want to logout?", async () => {
                 await supabaseClient.auth.signOut();
