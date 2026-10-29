@@ -147,7 +147,6 @@
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff; width: 18px; height: 18px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Modals */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -241,17 +240,17 @@
                 <input type="url" id="link-url" placeholder="https://...">
             </div>
             <div class="form-group">
-                <label>Select Icon</label>
+                <label>Select Icon / Platform</label>
                 <select id="link-icon">
+                    <option value="fa-link">Other Link (Auto-Detect)</option>
+                    <option value="fa-globe">Generic Website</option>
                     <option value="fa-instagram">Instagram</option>
                     <option value="fa-youtube">YouTube</option>
                     <option value="fa-github">GitHub</option>
                     <option value="fa-whatsapp">WhatsApp</option>
                     <option value="fa-twitter">Twitter / X</option>
                     <option value="fa-facebook">Facebook</option>
-                    <option value="fa-globe">Website</option>
                     <option value="fa-envelope">Email</option>
-                    <option value="fa-link">Other Link</option>
                 </select>
             </div>
             <button class="btn-primary" onclick="addLink()" id="add-link-btn">
@@ -308,6 +307,7 @@
             } catch (_) { return false; }
         }
 
+        // 🔥 SMART DETECTOR (Ab generic websites ke liye 'fa-globe' return karega) 🔥
         function detectPlatform(url) {
             const u = url.toLowerCase();
             if (u.includes('wa.me') || u.includes('whatsapp.com')) return 'fa-whatsapp';
@@ -317,7 +317,7 @@
             if (u.includes('twitter.com') || u.includes('x.com')) return 'fa-twitter';
             if (u.includes('facebook.com')) return 'fa-facebook';
             if (u.startsWith('mailto:')) return 'fa-envelope';
-            return null; 
+            return 'fa-globe'; // Default agar koi specific platform nahi mila
         }
 
         async function initDashboard() {
@@ -358,8 +358,6 @@
                 const div = document.createElement('div');
                 div.className = 'link-item';
                 
-                // FIXED: Added quotes around ${link.id} to prevent JS crash. 
-                // Added external link icon back, removed up/down arrows.
                 div.innerHTML = `
                     <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="link-content">
                         <div class="icon"><i class="fa-brands ${link.icon || 'fa-solid fa-link'}"></i></div>
@@ -397,32 +395,47 @@
         async function addLink() {
             const title = document.getElementById('link-title').value.trim();
             let url = document.getElementById('link-url').value.trim();
-            let icon = document.getElementById('link-icon').value;
+            let userSelectedIcon = document.getElementById('link-icon').value;
             const btn = document.getElementById('add-link-btn');
 
             if (!title || !url) { showToast("Title and URL are required!", "error"); return; }
 
-            if (icon === 'fa-envelope' && !url.startsWith('mailto:') && url.includes('@')) {
+            // URL Formatting
+            if (userSelectedIcon === 'fa-envelope' && !url.startsWith('mailto:') && url.includes('@')) {
                 url = 'mailto:' + url;
             } else if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('mailto:')) { 
                 url = 'https://' + url; 
             }
 
             if (!isValidUrl(url)) {
-                showToast("Invalid URL! Please enter a valid link (e.g., google.com).", "error");
+                showToast("Invalid URL! Please enter a valid link.", "error");
                 return;
             }
 
+            // 🔥 SMART VALIDATION LOGIC 🔥
             const detectedIcon = detectPlatform(url);
-            
-            if (detectedIcon) {
-                if (icon !== 'fa-link' && icon !== detectedIcon) {
-                    showToast(`Mismatch! You selected ${iconNames[icon]} but link is for ${iconNames[detectedIcon]}.`, "error");
-                    return;
-                } else if (icon === 'fa-link') {
-                    icon = detectedIcon;
-                    showToast(`Detected ${iconNames[detectedIcon]} link, icon auto-updated!`, "info");
+
+            // 1. Agar user ne "Other" select kiya hai (Auto-Detect)
+            if (userSelectedIcon === 'fa-link') {
+                userSelectedIcon = detectedIcon; // Icon ko auto update kar do
+                if (detectedIcon !== 'fa-globe') {
+                    showToast(`Auto-detected ${iconNames[detectedIcon]} link!`, "info");
                 }
+            } 
+            // 2. Agar user ne specific platform select kiya aur link generic hai
+            else if (userSelectedIcon !== 'fa-globe' && detectedIcon === 'fa-globe') {
+                showToast(`Mismatch! You selected ${iconNames[userSelectedIcon]} but link is a generic website.`, "error");
+                return;
+            }
+            // 3. Agar user ne specific platform select kiya aur link kisi aur platform ka hai
+            else if (userSelectedIcon !== 'fa-globe' && detectedIcon !== 'fa-globe' && userSelectedIcon !== detectedIcon) {
+                showToast(`Mismatch! You selected ${iconNames[userSelectedIcon]} but link is for ${iconNames[detectedIcon]}.`, "error");
+                return;
+            }
+            // 4. Agar user ne "Website" select kiya aur link kisi specific platform ka hai
+            else if (userSelectedIcon === 'fa-globe' && detectedIcon !== 'fa-globe') {
+                showToast(`This looks like a ${iconNames[detectedIcon]} link. Please select it from the dropdown.`, "error");
+                return;
             }
 
             btn.innerHTML = '<div class="spinner"></div>';
@@ -431,7 +444,7 @@
             const newIndex = existingLinks && existingLinks.length > 0 ? existingLinks[0].order_index + 1 : 0;
 
             const { error } = await supabaseClient.from('links').insert([{
-                user_id: currentUser.id, title: title, url: url, icon: icon, order_index: newIndex
+                user_id: currentUser.id, title: title, url: url, icon: userSelectedIcon, order_index: newIndex
             }]);
 
             if (error) {
