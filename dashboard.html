@@ -77,6 +77,19 @@
         .user-info h2 { font-size: 18px; margin-bottom: 4px; }
         .user-info p { font-size: 13px; color: var(--text-muted); }
 
+        /* 🔥 QR CODE SECTION 🔥 */
+        .qr-section {
+            display: flex; align-items: center; justify-content: space-between;
+            background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+        .qr-section img { width: 80px; height: 80px; border-radius: 8px; background: #fff; padding: 5px; }
+        .qr-text h4 { font-size: 14px; margin-bottom: 4px; }
+        .qr-text p { font-size: 11px; color: var(--text-muted); margin-bottom: 8px;}
+        .btn-small {
+            padding: 6px 12px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; text-decoration: none; display: inline-block;
+        }
+
         .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 6px; font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
         
@@ -135,7 +148,8 @@
         
         .link-content .icon { width: 35px; height: 35px; border-radius: 8px; background: rgba(99, 102, 241, 0.2); display: flex; justify-content: center; align-items: center; color: var(--primary); font-size: 16px; flex-shrink: 0; }
         .link-content .text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .link-content h3 { font-size: 14px; font-weight: 600; }
+        .link-content h3 { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px;}
+        .link-content h3 span { font-size: 10px; background: rgba(16, 185, 129, 0.2); color: var(--success); padding: 2px 6px; border-radius: 4px; font-weight: 600;}
         .link-content p { font-size: 11px; color: var(--text-muted); }
 
         .link-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
@@ -235,6 +249,16 @@
                     <p id="display-email">Loading...</p>
                 </div>
             </div>
+
+            <!-- 🔥 QR CODE SECTION 🔥 -->
+            <div class="qr-section">
+                <div class="qr-text">
+                    <h4>Your Profile QR</h4>
+                    <p>Share your profile easily</p>
+                    <a href="#" id="qr-download-btn" target="_blank" class="btn-small"><i class="fa-solid fa-download"></i> Download</a>
+                </div>
+                <img id="qr-image" src="" alt="QR Code">
+            </div>
             
             <div class="form-group">
                 <label>Your Public Bio (Max 300 chars)</label>
@@ -310,6 +334,7 @@
     <script>
         let currentUser = null;
         let confirmCallback = null;
+        let currentUsername = "";
 
         const iconNames = {
             'fa-whatsapp': 'WhatsApp', 'fa-instagram': 'Instagram', 'fa-youtube': 'YouTube',
@@ -366,35 +391,22 @@
                 }
                 const url = new URL(string);
                 if (url.protocol !== "http:" && url.protocol !== "https:") return false;
-                
                 const hostParts = url.hostname.split('.');
                 if (hostParts.length < 2 || hostParts.some(part => part.length === 0)) return false; 
                 if (hostParts[hostParts.length - 1].length < 2) return false; 
-
                 return true;
             } catch (_) { return false; }
         }
 
-        // 🔥 BACKGROUND LINK CHECKER (PING) 🔥
         async function checkLinkLive(url) {
             if (url.startsWith('mailto:')) return true;
-            
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 sec timeout
-                
-                // Request server without opening a new tab
-                await fetch(url, { 
-                    method: 'HEAD', 
-                    mode: 'no-cors',
-                    signal: controller.signal 
-                });
-                
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                await fetch(url, { method: 'HEAD', mode: 'no-cors', signal: controller.signal });
                 clearTimeout(timeoutId);
-                return true; // Domain exists and responded
-            } catch (error) {
-                return false; // DNS failed, unreachable, or timeout
-            }
+                return true;
+            } catch (error) { return false; }
         }
 
         function detectPlatform(url) {
@@ -425,15 +437,30 @@
             const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
             
             if (profile) {
+                currentUsername = profile.username;
                 document.getElementById('display-username').innerText = '@' + profile.username;
                 document.getElementById('user-avatar').innerText = profile.username.charAt(0).toUpperCase();
                 if (profile.bio) document.getElementById('profile-bio').value = profile.bio;
+                generateQR(profile.username);
             } else {
                 const metaUsername = currentUser.user_metadata?.username || 'user';
+                currentUsername = metaUsername;
                 document.getElementById('display-username').innerText = '@' + metaUsername;
                 document.getElementById('user-avatar').innerText = metaUsername.charAt(0).toUpperCase();
+                generateQR(metaUsername);
             }
             loadLinks();
+        }
+
+        // 🔥 QR CODE GENERATOR FUNCTION 🔥
+        function generateQR(username) {
+            // Public profile ka URL (Agla step hum isko live karenge)
+            const profileUrl = window.location.origin + '/u/' + username;
+            // Free QR Code API
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(profileUrl)}&bgcolor=ffffff&color=0b0f19`;
+            
+            document.getElementById('qr-image').src = qrUrl;
+            document.getElementById('qr-download-btn').href = qrUrl;
         }
 
         async function loadLinks() {
@@ -453,11 +480,12 @@
                 const div = document.createElement('div');
                 div.className = 'link-item';
                 
+                // 🔥 Added Click Count here 🔥
                 div.innerHTML = `
                     <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="link-content">
                         <div class="icon"><i class="${getIconClass(link.icon)}"></i></div>
                         <div class="text">
-                            <h3>${link.title}</h3>
+                            <h3>${link.title} <span>${link.clicks || 0} Clicks</span></h3>
                             <p>${link.url.replace(/^https?:\/\//, '')}</p>
                         </div>
                     </a>
@@ -501,13 +529,11 @@
                 url = 'https://' + url; 
             }
 
-            // 1. Text Format Validation
             if (!isValidUrl(url)) {
                 showToast("Invalid URL! Please enter a complete domain.", "error");
                 return;
             }
 
-            // 2. Smart Icon Logic
             const detectedIcon = detectPlatform(url);
 
             if (userSelectedIcon === 'fa-link') {
@@ -526,7 +552,6 @@
                 return;
             }
 
-            // 3. Live Link Check (Ping)
             btn.innerHTML = '<div class="spinner"></div>';
             
             const isLive = await checkLinkLive(url);
@@ -536,12 +561,11 @@
                 return;
             }
 
-            // 4. Save to Database
             const { data: existingLinks } = await supabaseClient.from('links').select('order_index').eq('user_id', currentUser.id).order('order_index', { ascending: false }).limit(1);
             const newIndex = existingLinks && existingLinks.length > 0 ? existingLinks[0].order_index + 1 : 0;
 
             const { error } = await supabaseClient.from('links').insert([{
-                user_id: currentUser.id, title: title, url: url, icon: userSelectedIcon, order_index: newIndex
+                user_id: currentUser.id, title: title, url: url, icon: userSelectedIcon, order_index: newIndex, clicks: 0
             }]);
 
             if (error) {
