@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profile - Yunam</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: rgba(20, 27, 45, 0.6);
+            --primary: #6366f1;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { 
+            box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; touch-action: manipulation; 
+            -webkit-user-select: none; user-select: none; 
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .profile-container {
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .avatar {
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 32px; font-weight: 700; color: #fff;
+            margin: 0 auto 15px auto;
+            border: 3px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .username { font-size: 22px; font-weight: 700; margin-bottom: 5px; }
+        .bio { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; padding: 0 10px;}
+
+        .save-contact-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff; border: 1px solid var(--border);
+            padding: 10px 20px; border-radius: 20px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px;
+            margin-bottom: 30px; transition: 0.3s;
+        }
+        .save-contact-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.95); }
+
+        .links-wrapper {
+            display: flex; flex-direction: column; gap: 15px; width: 100%;
+        }
+
+        .link-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            border-radius: 15px;
+            display: flex; align-items: center; gap: 15px;
+            text-decoration: none; color: var(--text-main);
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .link-card:active { transform: scale(0.98); background: rgba(255,255,255,0.05); }
+
+        .link-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: rgba(99, 102, 241, 0.15);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 18px; color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .link-text {
+            flex: 1; text-align: left;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        
+        .link-text h3 { font-size: 15px; font-weight: 600; }
+        
+        .arrow-icon { color: var(--text-muted); font-size: 14px; }
+
+        .footer {
+            margin-top: 40px; font-size: 12px; color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            text-decoration: none;
+        }
+        .footer span { font-weight: 700; color: var(--primary); }
+
+        /* Custom Toast */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 350px; }
+        .toast { background: #1e293b; color: #fff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; animation: slideDown 0.3s ease forwards; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: translateY(-10px); } }
+
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top: 3px solid var(--primary); width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 50px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="toast-container"></div>
+
+    <div class="profile-container" id="profile-content" style="display: none;">
+        <div class="avatar" id="user-avatar">U</div>
+        <div class="username" id="user-name">@username</div>
+        <div class="bio" id="user-bio">Bio loading...</div>
+        
+        <button class="save-contact-btn" onclick="saveContact()" id="save-btn">
+            <i class="fa-solid fa-address-card"></i> Save Contact
+        </button>
+
+        <div class="links-wrapper" id="links-container"></div>
+
+        <a href="index.html" class="footer">
+            Powered by <span>Yunam</span>
+        </a>
+    </div>
+
+    <div class="loader" id="loader"></div>
+
+    <script>
+        let profileData = null;
+        let userLinks = [];
+
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info" style="color:var(--primary)"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        function getIconClass(icon) {
+            const brands = ['fa-instagram', 'fa-youtube', 'fa-github', 'fa-whatsapp', 'fa-twitter', 'fa-facebook'];
+            if (brands.includes(icon)) return `fa-brands ${icon}`;
+            return `fa-solid ${icon}`;
+        }
+
+        async function loadProfile() {
+            // URL se username nikalna (e.g. /u/usman)
+            const urlParams = new URLSearchParams(window.location.search);
+            const username = urlParams.get('u');
+
+            if (!username) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('profile-content').style.display = 'block';
+                document.getElementById('user-name').innerText = "User not found";
+                return;
+            }
+
+            // Profile Fetch
+            const { data: profile, error } = await supabaseClient.from('profiles').select('*').eq('username', username).single();
+            
+            if (error || !profile) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('profile-content').style.display = 'block';
+                document.getElementById('user-name').innerText = "@user_not_found";
+                document.getElementById('user-bio').innerText = "This Yunam profile doesn't exist.";
+                document.getElementById('save-btn').style.display = 'none';
+                return;
+            }
+
+            profileData = profile;
+            
+            // UI Update
+            document.getElementById('user-avatar').innerText = profile.username.charAt(0).toUpperCase();
+            document.getElementById('user-name').innerText = '@' + profile.username;
+            if (profile.bio) document.getElementById('user-bio').innerText = profile.bio;
+            else document.getElementById('user-bio').style.display = 'none';
+
+            // Links Fetch
+            const { data: links } = await supabaseClient.from('links').select('*').eq('user_id', profile.id).order('order_index', { ascending: true });
+            userLinks = links || [];
+
+            const container = document.getElementById('links-container');
+            if (userLinks.length === 0) {
+                container.innerHTML = '<p style="color:var(--text-muted); font-size:13px;">No links added yet.</p>';
+            } else {
+                userLinks.forEach(link => {
+                    const a = document.createElement('a');
+                    a.href = link.url;
+                    a.target = "_blank";
+                    a.className = "link-card";
+                    // Click track function call
+                    a.onclick = () => trackClick(link.id);
+                    
+                    a.innerHTML = `
+                        <div class="link-icon"><i class="${getIconClass(link.icon)}"></i></div>
+                        <div class="link-text"><h3>${link.title}</h3></div>
+                        <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+                    `;
+                    container.appendChild(a);
+                });
+            }
+
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('profile-content').style.display = 'block';
+        }
+
+        // Click count barhane ka function
+        async function trackClick(linkId) {
+            await supabaseClient.rpc('increment_click', { link_id: linkId });
+        }
+
+        // 🔥 SAVE CONTACT (VCF) FUNCTION 🔥
+        function saveContact() {
+            if (!profileData) return;
+
+            // Ek VCard (Contact file) ka format banaya
+            const vcard = `BEGIN:VCARD
+VERSION:3.0
+FN:${profileData.username}
+N:${profileData.username};;;;
+TITLE:${profileData.bio ? profileData.bio.replace(/\n/g, ' ') : 'Yunam User'}
+URL:${window.location.origin}/u/${profileData.username}
+END:VCARD`;
+
+            // File download trigger karna
+            const blob = new Blob([vcard], { type: "text/vcard" });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${profileData.username}.vcf`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showToast("Contact file downloaded!");
+        }
+
+        window.onload = loadProfile;
+    </script>
+</body>
+</html>
