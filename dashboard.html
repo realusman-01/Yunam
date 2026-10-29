@@ -87,10 +87,7 @@
             outline: none; transition: all 0.3s ease; appearance: none; -webkit-appearance: none;
         }
 
-        /* 🔥 Bio Expandable Box 🔥 */
-        textarea {
-            resize: none; min-height: 80px; max-height: 120px; line-height: 1.5;
-        }
+        textarea { resize: none; min-height: 80px; max-height: 120px; line-height: 1.5; }
 
         input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
@@ -116,9 +113,8 @@
         }
         .link-item:active { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
 
-        /* 🔥 Full clickable area 🔥 */
         .link-content { 
-            display: flex; align-items: center; gap: 12px; overflow: hidden; flex: 1; cursor: pointer;
+            display: flex; align-items: center; gap: 12px; overflow: hidden; flex: 1; cursor: pointer; text-decoration: none; color: inherit;
         }
         
         .link-content .icon { width: 35px; height: 35px; border-radius: 8px; background: rgba(99, 102, 241, 0.2); display: flex; justify-content: center; align-items: center; color: var(--primary); font-size: 16px; flex-shrink: 0; }
@@ -130,12 +126,12 @@
         .action-btn {
             background: transparent; border: none; color: var(--text-muted);
             width: 32px; height: 32px; border-radius: 8px; display: flex; justify-content: center; align-items: center;
-            cursor: pointer; font-size: 14px; transition: 0.2s;
+            cursor: pointer; font-size: 14px; transition: 0.2s; text-decoration: none;
         }
         .action-btn:active { background: rgba(255,255,255,0.1); color: var(--text-main); }
         .action-btn.delete:active { color: var(--error); background: rgba(239, 68, 68, 0.1); }
+        .action-btn.open-link { color: var(--primary); }
 
-        /* Toasts */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 350px; }
         .toast { background: #1e293b; color: #fff; padding: 15px 20px; border-radius: 10px; border-left: 4px solid var(--primary); box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; animation: slideDown 0.3s ease forwards; }
         .toast.error { border-left-color: var(--error); }
@@ -151,7 +147,7 @@
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid #fff; width: 18px; height: 18px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* 🔥 MODALS (Popups) 🔥 */
+        /* Modals */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -188,7 +184,6 @@
 
     <div id="toast-container"></div>
 
-    <!-- Settings Modal -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal-content">
             <h3>Settings</h3>
@@ -200,7 +195,6 @@
         </div>
     </div>
 
-    <!-- Confirmation Modal (Delete/Logout) -->
     <div class="modal-overlay" id="confirm-modal">
         <div class="modal-content">
             <h3 id="confirm-title">Are you sure?</h3>
@@ -218,7 +212,6 @@
     </div>
 
     <div class="container">
-        <!-- Profile Section -->
         <div class="glass-card">
             <div class="profile-header">
                 <div class="avatar-circle" id="user-avatar">U</div>
@@ -237,7 +230,6 @@
             </button>
         </div>
 
-        <!-- Add New Link Section -->
         <div class="glass-card">
             <div class="section-title"><i class="fa-solid fa-plus-circle"></i> Add New Link</div>
             <div class="form-group">
@@ -267,7 +259,6 @@
             </button>
         </div>
 
-        <!-- Links List Section -->
         <div class="glass-card">
             <div class="section-title"><i class="fa-solid fa-list-ul"></i> Your Links</div>
             <div class="links-list" id="links-container"></div>
@@ -278,14 +269,12 @@
         let currentUser = null;
         let confirmCallback = null;
 
-        // Dictionary for Display Names
         const iconNames = {
             'fa-whatsapp': 'WhatsApp', 'fa-instagram': 'Instagram', 'fa-youtube': 'YouTube',
             'fa-github': 'GitHub', 'fa-twitter': 'Twitter/X', 'fa-facebook': 'Facebook', 
             'fa-envelope': 'Email', 'fa-link': 'Other', 'fa-globe': 'Website'
         };
 
-        // Modal Control Functions
         function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
@@ -313,13 +302,12 @@
 
         function isValidUrl(string) {
             try {
-                if (string.startsWith('mailto:')) return true; // Accept Email
+                if (string.startsWith('mailto:')) return true; 
                 const url = new URL(string);
                 return url.hostname.includes('.') && (url.protocol === "http:" || url.protocol === "https:");
             } catch (_) { return false; }
         }
 
-        // 🔥 SMART LINK DETECTOR 🔥
         function detectPlatform(url) {
             const u = url.toLowerCase();
             if (u.includes('wa.me') || u.includes('whatsapp.com')) return 'fa-whatsapp';
@@ -329,7 +317,7 @@
             if (u.includes('twitter.com') || u.includes('x.com')) return 'fa-twitter';
             if (u.includes('facebook.com')) return 'fa-facebook';
             if (u.startsWith('mailto:')) return 'fa-envelope';
-            return null; // Unknown platform
+            return null; 
         }
 
         async function initDashboard() {
@@ -366,22 +354,27 @@
                 return;
             }
 
-            links.forEach((link, index) => {
+            links.forEach((link) => {
                 const div = document.createElement('div');
                 div.className = 'link-item';
-                // Link is now fully clickable using onclick to avoid nesting issues
+                
+                // FIXED: Added quotes around ${link.id} to prevent JS crash. 
+                // Added external link icon back, removed up/down arrows.
                 div.innerHTML = `
-                    <div class="link-content" onclick="window.open('${link.url}', '_blank')">
+                    <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="link-content">
                         <div class="icon"><i class="fa-brands ${link.icon || 'fa-solid fa-link'}"></i></div>
                         <div class="text">
                             <h3>${link.title}</h3>
                             <p>${link.url.replace(/^https?:\/\//, '')}</p>
                         </div>
-                    </div>
+                    </a>
                     <div class="link-actions">
-                        ${index > 0 ? `<button class="action-btn" onclick="moveLink(${link.id}, -1)"><i class="fa-solid fa-arrow-up"></i></button>` : ''}
-                        ${index < links.length - 1 ? `<button class="action-btn" onclick="moveLink(${link.id}, 1)"><i class="fa-solid fa-arrow-down"></i></button>` : ''}
-                        <button class="action-btn delete" onclick="promptDelete(${link.id})"><i class="fa-solid fa-trash"></i></button>
+                        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="action-btn open-link" title="Open Link">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                        <button class="action-btn delete" onclick="promptDelete('${link.id}')">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
                 `;
                 container.appendChild(div);
@@ -409,7 +402,6 @@
 
             if (!title || !url) { showToast("Title and URL are required!", "error"); return; }
 
-            // Handle Email special case
             if (icon === 'fa-envelope' && !url.startsWith('mailto:') && url.includes('@')) {
                 url = 'mailto:' + url;
             } else if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('mailto:')) { 
@@ -421,16 +413,13 @@
                 return;
             }
 
-            // 🔥 SMART ICON VALIDATION & AUTO-DETECT 🔥
             const detectedIcon = detectPlatform(url);
             
             if (detectedIcon) {
                 if (icon !== 'fa-link' && icon !== detectedIcon) {
-                    // User selected specific icon but link doesn't match
                     showToast(`Mismatch! You selected ${iconNames[icon]} but link is for ${iconNames[detectedIcon]}.`, "error");
                     return;
                 } else if (icon === 'fa-link') {
-                    // User selected "Other", auto-switch to detected platform
                     icon = detectedIcon;
                     showToast(`Detected ${iconNames[detectedIcon]} link, icon auto-updated!`, "info");
                 }
@@ -456,35 +445,18 @@
             btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Link';
         }
 
-        // 🔥 CUSTOM DELETE MODAL 🔥
         function promptDelete(id) {
             openConfirm("Delete Link", "Are you sure you want to delete this link?", async () => {
                 const { error } = await supabaseClient.from('links').delete().eq('id', id);
-                if (error) showToast("Failed to delete link!", "error");
-                else { showToast("Link deleted", "success"); loadLinks(); }
+                if (error) {
+                    showToast("Failed to delete link!", "error");
+                } else { 
+                    showToast("Link deleted successfully", "success"); 
+                    loadLinks(); 
+                }
             });
         }
 
-        async function moveLink(id, direction) {
-            const { data: links } = await supabaseClient.from('links').select('*').eq('user_id', currentUser.id).order('order_index', { ascending: true });
-            const currentIndex = links.findIndex(l => l.id === id);
-            const targetIndex = currentIndex + direction;
-
-            if (targetIndex < 0 || targetIndex >= links.length) return;
-
-            const currentLink = links[currentIndex];
-            const targetLink = links[targetIndex];
-            
-            const currentOrder = currentLink.order_index;
-            const targetOrder = targetLink.order_index;
-
-            await supabaseClient.from('links').update({ order_index: targetOrder }).eq('id', currentLink.id);
-            await supabaseClient.from('links').update({ order_index: currentOrder }).eq('id', targetLink.id);
-            
-            loadLinks(); 
-        }
-
-        // 🔥 SETTINGS & LOGOUT 🔥
         function confirmLogout() {
             openConfirm("Logout", "Are you sure you want to logout?", async () => {
                 await supabaseClient.auth.signOut();
