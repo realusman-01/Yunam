@@ -91,7 +91,6 @@
 
         input:focus, textarea:focus, .select-trigger:active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15); }
 
-        /* 🔥 CUSTOM DROPDOWN CSS 🔥 */
         .custom-select { position: relative; width: 100%; }
         .select-trigger {
             display: flex; justify-content: space-between; align-items: center; cursor: pointer;
@@ -257,7 +256,6 @@
                 <input type="url" id="link-url" placeholder="https://...">
             </div>
             
-            <!-- 🔥 CUSTOM DROPDOWN 🔥 -->
             <div class="form-group">
                 <label>Select Icon / Platform</label>
                 <div class="custom-select" id="custom-icon-select">
@@ -295,7 +293,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- Hidden input to store dropdown value -->
                 <input type="hidden" id="link-icon" value="fa-link">
             </div>
 
@@ -320,7 +317,6 @@
             'fa-envelope': 'Email', 'fa-link': 'Other', 'fa-globe': 'Website'
         };
 
-        // 🔥 Custom Dropdown Logic 🔥
         function toggleDropdown() {
             document.getElementById('select-options').classList.toggle('active');
         }
@@ -331,7 +327,6 @@
             document.getElementById('select-options').classList.remove('active');
         }
 
-        // Close dropdown when clicking outside
         document.addEventListener('click', function(event) {
             const select = document.getElementById('custom-icon-select');
             if (select && !select.contains(event.target)) {
@@ -364,7 +359,6 @@
             setTimeout(() => { toast.style.animation = 'fadeOut 0.3s ease forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        // 🔥 Strict URL Validation (Catches .app or .com without domain) 🔥
         function isValidUrl(string) {
             try {
                 if (string.startsWith('mailto:')) {
@@ -375,10 +369,32 @@
                 
                 const hostParts = url.hostname.split('.');
                 if (hostParts.length < 2 || hostParts.some(part => part.length === 0)) return false; 
-                if (hostParts[hostParts.length - 1].length < 2) return false; // TLD must be at least 2 chars
+                if (hostParts[hostParts.length - 1].length < 2) return false; 
 
                 return true;
             } catch (_) { return false; }
+        }
+
+        // 🔥 BACKGROUND LINK CHECKER (PING) 🔥
+        async function checkLinkLive(url) {
+            if (url.startsWith('mailto:')) return true;
+            
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 sec timeout
+                
+                // Request server without opening a new tab
+                await fetch(url, { 
+                    method: 'HEAD', 
+                    mode: 'no-cors',
+                    signal: controller.signal 
+                });
+                
+                clearTimeout(timeoutId);
+                return true; // Domain exists and responded
+            } catch (error) {
+                return false; // DNS failed, unreachable, or timeout
+            }
         }
 
         function detectPlatform(url) {
@@ -393,7 +409,6 @@
             return 'fa-globe'; 
         }
 
-        // 🔥 Fix broken icons in list 🔥
         function getIconClass(icon) {
             const brands = ['fa-instagram', 'fa-youtube', 'fa-github', 'fa-whatsapp', 'fa-twitter', 'fa-facebook'];
             if (brands.includes(icon)) return `fa-brands ${icon}`;
@@ -480,27 +495,23 @@
 
             if (!title || !url) { showToast("Title and URL are required!", "error"); return; }
 
-            // URL Formatting
             if (userSelectedIcon === 'fa-envelope' && !url.startsWith('mailto:') && url.includes('@')) {
                 url = 'mailto:' + url;
             } else if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('mailto:')) { 
                 url = 'https://' + url; 
             }
 
-            // Validation Check
+            // 1. Text Format Validation
             if (!isValidUrl(url)) {
-                showToast("Invalid URL! Please enter a complete domain (e.g., google.com).", "error");
+                showToast("Invalid URL! Please enter a complete domain.", "error");
                 return;
             }
 
-            // Smart Logic
+            // 2. Smart Icon Logic
             const detectedIcon = detectPlatform(url);
 
             if (userSelectedIcon === 'fa-link') {
                 userSelectedIcon = detectedIcon; 
-                if (detectedIcon !== 'fa-globe') {
-                    showToast(`Auto-detected ${iconNames[detectedIcon]} link!`, "info");
-                }
             } 
             else if (userSelectedIcon !== 'fa-globe' && detectedIcon === 'fa-globe') {
                 showToast(`Mismatch! You selected ${iconNames[userSelectedIcon]} but link is a generic website.`, "error");
@@ -515,8 +526,17 @@
                 return;
             }
 
+            // 3. Live Link Check (Ping)
             btn.innerHTML = '<div class="spinner"></div>';
+            
+            const isLive = await checkLinkLive(url);
+            if (!isLive) {
+                showToast("Link unreachable! The website doesn't exist or is down.", "error");
+                btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Link';
+                return;
+            }
 
+            // 4. Save to Database
             const { data: existingLinks } = await supabaseClient.from('links').select('order_index').eq('user_id', currentUser.id).order('order_index', { ascending: false }).limit(1);
             const newIndex = existingLinks && existingLinks.length > 0 ? existingLinks[0].order_index + 1 : 0;
 
@@ -527,7 +547,7 @@
             if (error) {
                 showToast("Failed to add link: " + error.message, "error");
             } else {
-                showToast("Link added successfully!", "success");
+                showToast("Link verified & added successfully!", "success");
                 document.getElementById('link-title').value = '';
                 document.getElementById('link-url').value = '';
                 loadLinks(); 
