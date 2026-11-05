@@ -378,7 +378,7 @@
             if(typeof supabaseClient !== 'undefined') {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session) {
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'dashboard';
                 }
             }
         }
