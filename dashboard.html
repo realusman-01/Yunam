@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module" src="https://unpkg.com/x-frame-bypass"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
     <script src="config.js"></script>
     
@@ -184,7 +185,7 @@
         </div>
         <div class="in-app-iframe-container">
             <div class="in-app-loader" id="in-app-loader"><i class="fa-solid fa-spinner fa-spin"></i></div>
-            <iframe id="in-app-iframe" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+          <iframe id="in-app-iframe" is="x-frame-bypass" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
         </div>
     </div>
 
