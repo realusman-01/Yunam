@@ -87,7 +87,7 @@
         .report-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; backdrop-filter: blur(5px); font-size: 12px;}
         .report-btn:active { background: var(--error); }
 
-        .buy-btn { width: 100%; padding: 10px; background: rgba(99, 102, 241, 0.15); color: var(--primary); border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; text-align: center; text-decoration: none; display: block;}
+        .buy-btn { width: 100%; padding: 10px; background: rgba(99, 102, 241, 0.15); color: var(--primary); border: none; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; text-align: center; display: block;}
         .buy-btn:active { background: var(--primary); color: white;}
 
         /* Settings Tabs */
@@ -160,11 +160,33 @@
         .modal-actions { display: flex; gap: 10px; }
         .btn-secondary { flex: 1; padding: 12px; background: rgba(255,255,255,0.1); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
         .btn-danger { flex: 1; padding: 12px; background: var(--error); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+
+        /* 🔥 IN-APP BROWSER STYLES 🔥 */
+        #in-app-browser { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 99999; display: none; flex-direction: column; }
+        .in-app-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card-bg); border-bottom: 1px solid var(--border); }
+        .in-app-header button { background: none; border: none; color: var(--text-main); font-size: 20px; cursor: pointer; padding: 5px; }
+        .in-app-url-box { flex: 1; margin: 0 15px; background: rgba(0,0,0,0.3); padding: 8px 15px; border-radius: 20px; font-size: 13px; color: var(--text-muted); text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .in-app-iframe-container { flex: 1; position: relative; background: #fff; }
+        .in-app-iframe-container iframe { width: 100%; height: 100%; border: none; }
+        .in-app-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--primary); font-size: 30px; }
     </style>
 </head>
 <body>
 
     <div id="toast-container"></div>
+
+    <!-- 🔥 IN-APP BROWSER OVERLAY 🔥 -->
+    <div id="in-app-browser">
+        <div class="in-app-header">
+            <button onclick="closeInAppBrowser()"><i class="fa-solid fa-arrow-left"></i></button>
+            <div class="in-app-url-box" id="in-app-url">Loading...</div>
+            <button onclick="openExternal()"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
+        </div>
+        <div class="in-app-iframe-container">
+            <div class="in-app-loader" id="in-app-loader"><i class="fa-solid fa-spinner fa-spin"></i></div>
+            <iframe id="in-app-iframe" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>
+        </div>
+    </div>
 
     <!-- Confirm Modal -->
     <div class="modal-overlay" id="confirm-modal">
@@ -382,7 +404,38 @@
 
         const iconNames = { 'fa-whatsapp': 'WhatsApp', 'fa-instagram': 'Instagram', 'fa-youtube': 'YouTube', 'fa-twitter': 'Twitter/X', 'fa-facebook': 'Facebook', 'fa-link': 'Other', 'fa-globe': 'Website' };
 
-        // Navigation
+        // 🔥 IN-APP BROWSER FUNCTIONS 🔥
+        let currentExternalUrl = '';
+        function openInAppBrowser(url) {
+            document.getElementById('in-app-browser').style.display = 'flex';
+            currentExternalUrl = url;
+            
+            // Extract domain for the top bar
+            try {
+                const domain = new URL(url).hostname.replace('www.', '');
+                document.getElementById('in-app-url').innerText = domain;
+            } catch { document.getElementById('in-app-url').innerText = url; }
+            
+            const iframe = document.getElementById('in-app-iframe');
+            const loader = document.getElementById('in-app-loader');
+            
+            loader.style.display = 'block';
+            iframe.src = url;
+            
+            iframe.onload = () => { loader.style.display = 'none'; };
+            setTimeout(() => { loader.style.display = 'none'; }, 3000); // Fallback
+        }
+
+        function closeInAppBrowser() {
+            document.getElementById('in-app-browser').style.display = 'none';
+            document.getElementById('in-app-iframe').src = 'about:blank';
+        }
+
+        function openExternal() {
+            if (currentExternalUrl) window.open(currentExternalUrl, '_blank');
+        }
+        // ---------------------------------
+
         function switchView(view) {
             document.getElementById('home-view').classList.remove('active');
             document.getElementById('settings-view').classList.remove('active');
@@ -412,7 +465,6 @@
             document.getElementById('tab-' + tab).classList.add('active');
         }
 
-        // Utilities
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -444,7 +496,6 @@
             });
         }
 
-        // Image Logic
         async function compressImage(file) {
             const options = { maxSizeMB: 0.2, maxWidthOrHeight: 800, useWebWorker: true };
             try { return await imageCompression(file, options); } catch (error) { return file; }
@@ -460,7 +511,6 @@
             return data.data.url;
         }
 
-        // Custom Dropdown
         function toggleDropdown() { document.getElementById('select-options').classList.toggle('active'); }
         function selectOption(value, iconClass, label) {
             document.getElementById('link-icon').value = value;
@@ -472,7 +522,6 @@
             if (select && !select.contains(event.target)) document.getElementById('select-options').classList.remove('active');
         });
 
-        // Init
         async function initDashboard() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!session) { window.location.href = 'index.html'; return; }
@@ -501,7 +550,6 @@
             document.getElementById('qr-download-btn').href = qrUrl;
         }
 
-        // Profile Logic
         async function uploadAvatar(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -525,38 +573,25 @@
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Profile';
         }
 
-        // Link Validation
-        function isValidUrl(string) {
+        // 🔥 SIMPLE AND RELIABLE LINK FORMAT CHECKER 🔥
+        function checkLinkBasic(url) {
+            if (url.startsWith('mailto:')) {
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(url.replace('mailto:', ''));
+            }
             try {
-                if (string.startsWith('mailto:')) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(string.replace('mailto:', ''));
-                const url = new URL(string);
-                if (url.protocol !== "http:" && url.protocol !== "https:") return false;
-                const hostParts = url.hostname.split('.');
-                if (hostParts.length < 2 || hostParts.some(part => part.length === 0)) return false; 
-                if (hostParts[hostParts.length - 1].length < 2) return false; 
+                const urlObj = new URL(url);
+                // Check if domain has a dot (e.g., google.com). 'shsggs' will fail here.
+                if (!urlObj.hostname.includes('.')) return false;
+                
+                // Check if TLD is at least 2 characters (e.g., .com, .pk)
+                const parts = urlObj.hostname.split('.');
+                if (parts.length < 2 || parts[parts.length - 1].length < 2) return false;
+                
                 return true;
-            } catch (_) { return false; }
+            } catch (_) { 
+                return false; 
+            }
         }
-       // 🔥 NAYA SERVER-SIDE VALIDATION LOGIC 🔥
-async function checkLinkLive(url) {
-  if (url.startsWith('mailto:')) return true;
-  
-  try {
-    // Hamare Vercel Server (API) ko request bhejo
-    const response = await fetch('/api/check-link', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: url })
-    });
-    
-    const data = await response.json();
-    return data.valid; // Server check karke batayega (True ya False)
-    
-  } catch (error) {
-    console.error("API Error:", error);
-    return false; // Agar internet ya server issue ho toh link add na ho
-  }
-}
 
         function detectPlatform(url) {
             const u = url.toLowerCase();
@@ -586,7 +621,11 @@ async function checkLinkLive(url) {
             if (userSelectedIcon === 'fa-envelope' && !url.startsWith('mailto:') && url.includes('@')) url = 'mailto:' + url;
             else if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('mailto:')) url = 'https://' + url;
 
-            if (!isValidUrl(url)) { showToast("Invalid URL! Please enter a complete domain.", "error"); return; }
+            // 🔥 Call the basic checker
+            if (!checkLinkBasic(url)) { 
+                showToast("Invalid URL! Please enter a proper link (e.g. google.com).", "error"); 
+                return; 
+            }
 
             const detectedIcon = detectPlatform(url);
             if (userSelectedIcon === 'fa-link') { userSelectedIcon = detectedIcon; } 
@@ -597,13 +636,7 @@ async function checkLinkLive(url) {
             const btn = document.getElementById('add-link-btn');
             btn.innerHTML = '<div class="spinner"></div>';
             
-            const isLive = await checkLinkLive(url);
-            if (!isLive) {
-                showToast("Invalid link format! Please check the URL.", "error");
-                btn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Link';
-                return;
-            }
-
+            // Save to Database
             const { error } = await supabaseClient.from('links').insert([{ user_id: currentUser.id, title, url, icon: userSelectedIcon, order_index: 0 }]);
             if (error) { showToast(error.message, "error"); } 
             else { showToast("Link added!", "success"); document.getElementById('link-title').value = ''; document.getElementById('link-url').value = ''; loadMyLinks(); }
@@ -618,12 +651,12 @@ async function checkLinkLive(url) {
             links.forEach(l => {
                 list.innerHTML += `
                     <div class="list-item">
-                        <div class="list-item-info">
+                        <div class="list-item-info" onclick="openInAppBrowser('${l.url}')" style="cursor: pointer; flex: 1;">
                             <i class="${getIconClass(l.icon)}" style="color:var(--primary); font-size:18px; width:25px; text-align:center;"></i>
                             <div><h4>${l.title}</h4><p>${l.url.replace(/^https?:\/\//, '')}</p></div>
                         </div>
                         <div style="display: flex; gap: 5px;">
-                            <a href="${l.url}" target="_blank" class="action-btn" style="color: var(--primary);"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                            <button class="action-btn" onclick="openInAppBrowser('${l.url}')" style="color: var(--primary);"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>
                             <button class="action-btn" onclick="deleteLink('${l.id}')"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>`;
@@ -637,7 +670,6 @@ async function checkLinkLive(url) {
             });
         }
 
-        // Search & Products
         let searchTimeout;
         function handleSearch() {
             clearTimeout(searchTimeout);
@@ -671,7 +703,7 @@ async function checkLinkLive(url) {
                                         <img src="${u.avatar_url || 'https://via.placeholder.com/40'}">
                                         <div><h4>@${u.username}</h4><p>UID: ${uid}</p></div>
                                     </div>
-                                    <a href="/u/${u.username}" class="buy-btn" style="width: auto; padding: 6px 12px; font-size: 11px;">View</a>
+                                    <button onclick="window.location.href='/u/${u.username}'" class="buy-btn" style="width: auto; padding: 6px 12px; font-size: 11px;">View</button>
                                 </div>`;
                         });
                     } else { usersSection.style.display = 'none'; }
@@ -704,7 +736,7 @@ async function checkLinkLive(url) {
                             <img src="${p.profiles?.avatar_url || 'https://via.placeholder.com/20'}">
                             <span>@${p.profiles?.username || 'user'}</span>
                         </div>
-                        <a href="/u/${p.profiles?.username}" target="_blank" class="buy-btn">Buy (COD)</a>
+                        <button onclick="window.location.href='/u/${p.profiles?.username}'" class="buy-btn">Buy (COD)</button>
                     </div>`;
                 container.appendChild(a);
             });
