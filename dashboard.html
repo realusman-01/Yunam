@@ -6,8 +6,15 @@
     <title>Dashboard - Yunam</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase & Image Compression -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    
+    <!-- Clerk SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" data-clerk-publishable-key="pk_test_cmlnaHQtc2Vhc25haWwtMzE2MC5jbGVyay5hY2NvdW50cy5kZXYk"></script>
+
+    <!-- Config File (Jisme Supabase aur ImgBB ki keys hain) -->
     <script src="config.js"></script>
     
     <style>
@@ -189,7 +196,7 @@
 
     <div id="toast-container"></div>
 
-    <!-- 🔥 IN-APP BROWSER OVERLAY 🔥 -->
+    <!-- IN-APP BROWSER OVERLAY -->
     <div id="in-app-browser">
         <div class="in-app-header">
             <button onclick="closeInAppBrowser()"><i class="fa-solid fa-arrow-left"></i></button>
@@ -374,7 +381,7 @@
                         </select>
                     </div>
 
-                    <!-- 🔥 AI Description Writer 🔥 -->
+                    <!-- AI Description Writer -->
                     <div class="ai-writer-section">
                         <div class="ai-controls">
                             <select id="ai-language">
@@ -467,7 +474,7 @@
 
         const iconNames = { 'fa-whatsapp': 'WhatsApp', 'fa-instagram': 'Instagram', 'fa-youtube': 'YouTube', 'fa-twitter': 'Twitter/X', 'fa-facebook': 'Facebook', 'fa-link': 'Other', 'fa-globe': 'Website' };
 
-        // 🔥 IN-APP BROWSER FUNCTIONS 🔥
+        // In-App Browser Logic
         let currentExternalUrl = '';
         function openInAppBrowser(url) {
             document.getElementById('in-app-browser').style.display = 'flex';
@@ -486,6 +493,7 @@
         }
         function openExternal() { if (currentExternalUrl) window.open(currentExternalUrl, '_blank'); }
 
+        // Navigation
         function switchView(view) {
             document.getElementById('home-view').classList.remove('active');
             document.getElementById('settings-view').classList.remove('active');
@@ -534,12 +542,19 @@
             openModal('confirm-modal');
         }
         document.getElementById('confirm-yes-btn').addEventListener('click', () => { if (confirmCallback) confirmCallback(); closeModal('confirm-modal'); });
-        function confirmLogout() { openConfirm("Logout", "Are you sure you want to logout?", async () => { await supabaseClient.auth.signOut(); window.location.href = '/login'; }); }
+
+        function confirmLogout() {
+            openConfirm("Logout", "Are you sure you want to logout?", async () => {
+                await window.Clerk.signOut();
+                window.location.href = '/login';
+            });
+        }
 
         async function compressImage(file) {
             const options = { maxSizeMB: 0.2, maxWidthOrHeight: 800, useWebWorker: true };
             try { return await imageCompression(file, options); } catch (error) { return file; }
         }
+
         async function uploadImage(file) {
             const compressed = await compressImage(file);
             const formData = new FormData();
@@ -561,15 +576,42 @@
             if (select && !select.contains(event.target)) document.getElementById('select-options').classList.remove('active');
         });
 
+        // 🔥 INIT DASHBOARD (CLERK + AUTO PROFILE) 🔥
         async function initDashboard() {
-            const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!session) { window.location.href = '/login'; return; }
-            currentUser = session.user;
-            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+            await window.Clerk.load();
+
+            if (!window.Clerk.user) { 
+                window.location.href = '/login'; 
+                return; 
+            }
+
+            const clerkUser = window.Clerk.user;
+            currentUser = { id: clerkUser.id, email: clerkUser.primaryEmailAddress?.emailAddress };
+            document.getElementById('display-email').innerText = currentUser.email || 'No Email';
+            document.getElementById('display-uid').innerText = 'UID: ' + currentUser.id.substring(5, 12).toUpperCase();
+
+            // Fetch Profile
+            let { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', currentUser.id).single();
+            
+            // Agar profile nahi hai (naya user), toh auto create karo
+            if (!profile) {
+                const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+                const newUsername = 'user_' + randomSuffix;
+                const { data: newProfile, error } = await supabaseClient.from('profiles').insert([{ 
+                    id: currentUser.id, 
+                    username: newUsername 
+                }]).select().single();
+                
+                if (error) {
+                    console.error("Profile creation error:", error);
+                    showToast("Error creating profile. Please contact support.", "error");
+                } else {
+                    profile = newProfile;
+                }
+            }
+
             if (profile) {
                 document.getElementById('display-username').innerText = '@' + profile.username;
-                document.getElementById('display-email').innerText = currentUser.email;
-                document.getElementById('display-uid').innerText = 'UID: ' + currentUser.id.split('-')[0].toUpperCase();
                 if (profile.bio) document.getElementById('profile-bio').value = profile.bio;
                 if (profile.avatar_url) {
                     document.getElementById('avatar-preview').src = profile.avatar_url;
@@ -578,6 +620,7 @@
                 }
                 generateQR(profile.username);
             }
+
             switchView('home');
         }
 
@@ -606,8 +649,9 @@
             const bio = document.getElementById('profile-bio').value;
             const btn = document.getElementById('save-profile-btn');
             btn.innerHTML = '<div class="spinner"></div>';
-            await supabaseClient.from('profiles').update({ bio: bio }).eq('id', currentUser.id);
-            showToast("Profile saved!", "success");
+            const { error } = await supabaseClient.from('profiles').update({ bio: bio }).eq('id', currentUser.id);
+            if(error) showToast("Error saving profile", "error");
+            else showToast("Profile saved!", "success");
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Profile';
         }
 
@@ -657,6 +701,7 @@
             document.getElementById('ai-preview-text').innerText = '';
         }
 
+        // Link Validation
         function isValidUrl(string) {
             try {
                 if (string.startsWith('mailto:')) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(string.replace('mailto:', ''));
@@ -753,12 +798,12 @@
                 const usersSection = document.getElementById('users-results');
                 const usersContainer = document.getElementById('users-container');
                 if (searchQuery) {
-                    const { data: users } = await supabaseClient.from('profiles').select('*').or(`username.ilike.%${searchQuery}%,id.ilike.${searchQuery}%`).limit(5);
+                    const { data: users } = await supabaseClient.from('profiles').select('*').or(`username.ilike.%${searchQuery}%,id.ilike.%${searchQuery}%`).limit(5);
                     if (users && users.length > 0) {
                         usersSection.style.display = 'block';
                         usersContainer.innerHTML = '';
                         users.forEach(u => {
-                            const uid = u.id.split('-')[0].toUpperCase();
+                            const uid = u.id.substring(5, 12).toUpperCase();
                             usersContainer.innerHTML += `
                                 <div class="user-result">
                                     <div class="user-result-info">
