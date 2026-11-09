@@ -3,101 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Yunam - Login</title>
+    <title>Yunam - Login Test</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
-    
-    <!-- Clerk SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" data-clerk-publishable-key="pk_test_cmlnaHQtc2Vhc25haWwtMzE2MC5jbGVyay5hY2NvdW50cy5kZXYk"></script>
+    <!-- 🔥 YAHAN APNI CLERK PUBLISHABLE KEY DAALO 🔥 -->
+    <script 
+        async 
+        crossorigin="anonymous" 
+        data-clerk-publishable-key="pk_test_cmlnaHQtc2Vhc25haWwtMzE2MC5jbGVyay5hY2NvdW50cy5kZXYk" 
+        src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" 
+        type="text/javascript">
+    </script>
     
     <style>
-        :root {
-            --bg-color: #0b0f19;
-            --card-bg: rgba(20, 27, 45, 0.7);
-            --primary: #6366f1;
-            --text-main: #f8fafc;
-            --border: rgba(255, 255, 255, 0.1);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; }
-
-        body {
-            background-color: var(--bg-color);
-            background-image: radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15), transparent 25%), radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.15), transparent 25%);
-            color: var(--text-main);
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; padding: 20px;
-        }
-
-        .glass-container {
-            background: var(--card-bg); backdrop-filter: blur(16px);
-            border: 1px solid var(--border); padding: 40px 30px;
-            border-radius: 20px; width: 100%; max-width: 420px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            position: relative; z-index: 10;
-            text-align: center;
-        }
-
-        .brand-logo {
-            font-size: 32px; font-weight: 700; margin-bottom: 20px;
-            background: linear-gradient(to right, #818cf8, #c084fc);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            letter-spacing: 1px;
-        }
-
-        /* Clerk Container Styling */
-        #clerk-auth-container { margin-top: 20px; display: flex; justify-content: center; }
-        
-        /* Clerk default UI ko theme ke mutabiq dark karne ke liye */
-        .cl-rootBox { width: 100% !important; }
-        
-        .loading-text { color: #94a3b8; font-size: 14px; margin-top: 20px;}
+        body { background-color: #0b0f19; color: white; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: #141b2d; padding: 40px 20px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        h1 { color: #818cf8; margin-bottom: 20px; }
+        #error-box { color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px; font-size: 13px; display: none; margin-top: 20px; word-break: break-all; text-align: left; }
+        .loading { color: #94a3b8; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <div class="glass-container">
-        <div class="brand-logo">Yunam</div>
-        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">The Ultimate Link-in-Bio & Marketplace</p>
-        
-        <!-- Clerk Yahan Apna UI Load Karega -->
+    <div class="container">
+        <h1>Yunam Login</h1>
         <div id="clerk-auth-container">
-            <p class="loading-text"><i class="fa-solid fa-spinner fa-spin"></i> Loading secure login...</p>
+            <p class="loading">Clerk load ho raha hai... (Wait karein)</p>
         </div>
+        <!-- Error yahan show hoga -->
+        <div id="error-box"></div>
     </div>
 
     <script>
-        async function initClerk() {
-            await window.Clerk.load();
-
-            // Agar user pehle se login hai, toh direct dashboard bhej do
-            if (window.Clerk.user) {
-                window.location.href = '/dashboard';
-                return;
-            }
-
+        window.addEventListener('load', async function() {
             const container = document.getElementById('clerk-auth-container');
-            container.innerHTML = ''; // Loading text hatao
+            const errorBox = document.getElementById('error-box');
 
-            // Clerk ka built-in login form UI mount karo
-            window.Clerk.mountSignIn(container, {
-                appearance: {
-                    variables: {
-                        colorPrimary: '#6366f1',
-                        colorBackground: '#141b2d',
-                        colorText: '#f8fafc',
-                        colorInputBackground: '#0b0f19',
-                        colorInputText: '#f8fafc',
-                    }
+            try {
+                if (typeof window.Clerk === 'undefined') {
+                    throw new Error("Clerk load nahi hua. Internet check karein ya ad-blocker band karein.");
                 }
-            });
-        }
 
-        // Clerk load hone ka wait karo
-        window.addEventListener('load', initClerk);
+                await window.Clerk.load();
+                container.innerHTML = ''; // Loading text hatao
+
+                // Agar user pehle se login hai
+                if (window.Clerk.user) {
+                    container.innerHTML = "<p>Already logged in! Redirecting to dashboard...</p>";
+                    setTimeout(() => window.location.href = '/dashboard', 1000);
+                    return;
+                }
+
+                // Login UI Mount karo
+                window.Clerk.mountSignIn(container);
+
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = ''; // Loading text hatao
+                errorBox.style.display = 'block';
+                errorBox.innerHTML = "<b>ERROR:</b> " + error.message;
+            }
+        });
     </script>
 </body>
 </html>
