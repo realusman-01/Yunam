@@ -30,63 +30,63 @@
             const errorBox = document.getElementById('error-box');
 
             try {
-                // 1. Apni Publishable Key yahan daalo
+                // 1. Apni Publishable Key yahan daalein
                 const CLERK_PUBLISHABLE_KEY = 'pk_test_cmlnaHQtc2Vhc25haWwtMzE2MC5jbGVyay5hY2NvdW50cy5kZXYk';
                 
                 if (CLERK_PUBLISHABLE_KEY.includes('YAHAN')) {
-                    throw new Error("Bhai, key paste karna bhool gaye ho!");
+                    throw new Error("Please enter your actual Clerk Publishable Key.");
                 }
 
-                // 2. Key se Clerk ka domain nikaalo
+                // 2. Decode domain from key
                 const clerkDomain = atob(CLERK_PUBLISHABLE_KEY.split('_')[2]).slice(0, -1);
 
-                // 3. UI Bundle load karo
+                // 3. Load Clerk UI bundle first
                 await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
                     script.src = `https://${clerkDomain}/npm/@clerk/ui@1/dist/ui.browser.js`;
                     script.async = true;
-                    script.crossOrigin = 'anonymous';
                     script.onload = resolve;
-                    script.onerror = () => reject(new Error('UI bundle load nahi hua. Internet ya CDN check karein.'));
+                    script.onerror = () => reject(new Error('Failed to load Clerk UI bundle.'));
                     document.head.appendChild(script);
                 });
 
-                // 4. ClerkJS load karo
+                // 4. Load Clerk core JS with data attribute so it initializes window.Clerk
                 await new Promise((resolve, reject) => {
                     const script = document.createElement('script');
                     script.src = `https://${clerkDomain}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`;
                     script.async = true;
-                    script.crossOrigin = 'anonymous';
+                    // 🔥 Yeh attribute window.Clerk initialize karne ke liye zaroori hai
+                    script.setAttribute('data-clerk-publishable-key', CLERK_PUBLISHABLE_KEY);
                     script.onload = resolve;
-                    script.onerror = () => reject(new Error('ClerkJS load nahi hua.'));
+                    script.onerror = () => reject(new Error('Failed to load Clerk SDK.'));
                     document.head.appendChild(script);
                 });
 
-                // 5. Check karo ke Clerk global variable exist karta hai ya nahi
+                // 5. Double check if global variable exists
                 if (typeof window.Clerk === 'undefined') {
-                    throw new Error("Clerk JS load hui lekin 'Clerk' variable nahi bana. Browser cache clear karein.");
+                    throw new Error("Clerk script loaded but 'window.Clerk' was not created. Check browser console.");
                 }
 
-                // 6. Clerk ko initialize karo
+                // 6. Initialize Clerk with the UI constructor
                 await window.Clerk.load({
                     ui: { ClerkUI: window.__internal_ClerkUICtor }
                 });
 
-                container.innerHTML = ''; // Loading text hatao
+                container.innerHTML = ''; // clear loading text
 
-                // 7. Agar user pehle se login hai
+                // 7. Redirect if already logged in
                 if (window.Clerk.user) {
                     container.innerHTML = "<p>Already logged in! Redirecting...</p>";
                     setTimeout(() => window.location.href = '/dashboard', 1000);
                     return;
                 }
 
-                // 8. Login UI mount karo
+                // 8. Mount Sign In UI
                 window.Clerk.mountSignIn(container);
 
             } catch (error) {
-                console.error(error);
-                container.innerHTML = ''; // Loading text hatao
+                console.error("Clerk Initialization Error:", error);
+                container.innerHTML = '';
                 errorBox.style.display = 'block';
                 errorBox.innerHTML = "<b>ERROR:</b> " + error.message;
             }
